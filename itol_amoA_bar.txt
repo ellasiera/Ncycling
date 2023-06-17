@@ -1,0 +1,93 @@
+DATASET_SIMPLEBAR
+#In simple bar charts, each ID is associated to a single numeric value which is displayed as a bar outside the tree.
+#lines starting with a hash are comments and ignored during parsing
+
+#=================================================================#
+#                    MANDATORY SETTINGS                           #
+#=================================================================#
+#select the separator which is used to delimit the data below (TAB,SPACE or COMMA).This separator must be used throughout this file (except in the SEPARATOR line, which uses space).
+#SEPARATOR TAB
+#SEPARATOR SPACE
+SEPARATOR COMMA
+
+#label is used in the legend table (can be changed later)
+DATASET_LABEL,label 1
+
+#dataset color (can be changed later)
+COLOR,#ff0000
+
+#=================================================================#
+#                    OPTIONAL SETTINGS                            #
+#=================================================================#
+#dataset scale: you can simply set the values where the scale will be drawn
+#DATASET-SCALE,2000,10000,20000
+#or you can specify value, label, color, width, style and label size factor for each scale line (dash separated, format: VALUE-LABEL-COLOR-WIDTH-DASHED-LABEL-SCALE-FACTOR)) 
+#DATASET-SCALE,2000-2k line-#0000ff-5-1-1,10000-line at 10k-#ff0000-1-0-2,20000-3rd line-#00ff00-5-1-1
+
+#each dataset can have a legend, which is defined below
+#for each row in the legend, there should be one shape, color and label
+#shape should be a number between 1 and 6:
+#1: square
+#2: circle
+#3: star
+#4: right pointing triangle
+#5: left pointing triangle
+#6: checkmark
+
+#LEGEND-TITLE,Dataset legend
+#LEGEND-SHAPES,1,2,3
+#LEGEND-COLORS,#ff0000,#00ff00,#0000ff
+#LEGEND-LABELS,value1,value2,value3
+
+
+#=================================================================#
+#     all other optional settings can be set or changed later     #
+#           in the web interface (under 'Datasets' tab)           #
+#=================================================================#
+#all other optional settings can be set or changed later in the web interface (under 'Datasets' tab)
+
+#maximum width
+#WIDTH,1000
+
+#left margin, used to increase/decrease the spacing to the next dataset. Can be negative, causing datasets to overlap.
+#MARGIN,0
+
+#always show internal values; if set, values associated to internal nodes will be displayed even if these nodes are not collapsed. It could cause overlapping in the dataset display.
+#SHOW-INTERNAL,0
+
+#bar height factor; Default bar height will be slightly less than the available space between leaves, but you can set a multiplication factor here to increase/decrease it (values from 0 to 1 will decrease it, values above 1 will increase it)
+#HEIGHT-FACTOR,1
+
+#Display individual values above the bars
+#SHOW-VALUE,0
+
+#Bars are aligned to the node lines by default. Using BAR-SHIFT, you can move them all up/down by a fixed amount
+#BAR-SHIFT,0
+
+#BAR-ZERO specifies which dataset value will be used as a starting point for drawing the bars. Dataset values smaller than BAR-ZERO will be displayed to the left (possibly overlapping the tree, unless MARGIN is increased)
+#BAR-ZERO,0
+
+#border width; if set above 0, a border of specified width (in pixels) will be drawn around the bars
+#BORDER-WIDTH,0
+
+#border color; used when BORDER-WIDTH is above 0
+#BORDER-COLOR,#0000ff
+
+#Internal tree nodes can be specified using IDs directly, or using the 'last common ancestor' method described in iTOL help pages
+#=================================================================#
+#       Actual data follows after the "DATA" keyword              #
+#=================================================================#
+DATA
+H1_Bulk_29_scaffold_24258_1,68.42692403
+H1_Bulk_30_scaffold_11099_1,17827.03564
+H1_Bulk_30_scaffold_19455_2,104.5530961
+H1_Bulk_Litter_4_scaffold_20600_1,201.0633525
+H2_Bulk_34_1286_2,158.9856182
+H2_Bulk_36_scaffold_16936_1,25473.7037
+H2_Rhizo_33_scaffold_31872_1,76.37047886
+H2_Rhizo_Litter_7_scaffold_1591_1,8.607347948
+H3_Bulk_42_scaffold_4719_2,80.2522035
+H3_Bulk_Litter_17_scaffold_5477_1,30.42166151
+H4_Rhizo_43_scaffold_6699_2,32.38948532
+H4_Rhizo_45_scaffold_11485_2,140.5805631
+H4_Rhizo_Litter_19_scaffold_26876_1,3276.203306

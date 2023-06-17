@@ -1,0 +1,136 @@
+TREE_COLORS
+#use this template to define branch colors and styles, colored ranges and label colors/font styles/backgrounds
+#lines starting with a hash are comments and ignored during parsing
+
+#=================================================================#
+#                    MANDATORY SETTINGS                           #
+#=================================================================#
+#select the separator which is used to delimit the data below (TAB,SPACE or COMMA).This separator must be used throughout this file.
+
+#SEPARATOR TAB
+#SEPARATOR SPACE
+SEPARATOR COMMA
+
+#First 3 fields define the node, type and color
+#Possible types are:
+#'range': defines a colored range (colored background for labels/clade)
+#'clade': defines color/style for all branches in a clade
+#'branch': defines color/style for a single branch
+#'label': defines font color/style for the leaf label
+#'label_background': defines the leaf label background color
+
+#The following additional fields are required:
+#for 'range', field 4 defines the colored range label (used in the legend)
+
+#The following additional fields are optional:
+#for 'label', field 4 defines the font style ('normal',''bold', 'italic' or 'bold-italic') and field 5 defines the numeric scale factor for the font size (eg. with value 2, font size for that label will be 2x the standard size)
+#for 'clade' and 'branch', field 4 defines the branch style ('normal' or 'dashed') and field 5 defines the branch width scale factor (eg. with value 0.5, branch width for that clade will be 0.5 the standard width)
+
+#Internal tree nodes can be specified using IDs directly, or using the 'last common ancestor' method described in iTOL help pages
+#=================================================================#
+#       Actual data follows after the "DATA" keyword              #
+#=================================================================#
+DATA
+#NODE_ID TYPE COLOR LABEL_OR_STYLE SIZE_FACTOR
+
+#Examples
+#internal node with solid branches colored blue and twice the standard width
+#9031|9606 clade #0000ff normal 2
+#internal node with dashed branches colored red and one half the standard width
+#601|340 clade #ff0000 dashed 0.5
+#a single internal branch colored green, dashed and 5 times the normal width
+#915|777 branch #00ff00 dashed 5
+
+#colored range covering all leaves of an internal node,  colored red and with label 'Eukaryota'
+#184922|9606 range #ff0000 Eukaryota
+#examples of colored ranges from iTOL's Tree of Life
+#2190|2287 range #aaffaa Archaea
+#623|1502 range #aaaaff Bacteria
+
+#leaf label for node 9606 will be displayed in green, bold and twice the regular font size
+#9606 label #00ff00 bold 2
+
+#leaf label for node 9031 will be displayed in yellow, bold italic and half the regular font size
+#9031 label #ffff00 bold-italic 0.5
+
+#leaf label for node 8015 will be displayed in blue
+#8015 label #0000ff
+
+#leaf label for node 9606 will have a semi-transparent red background
+#9606 label_background rgba(255,0,0,0.5)
+
+CBY93673_Nitrososphaera_viennensis_EN76,label,#A9A9A9
+AFU59457_Nitrososphaera_gargensis_Ga9.2,label,#A9A9A9
+AIF83036_Nitrososphaera_evergladensis_SR1,label,#A9A9A9
+AQQ12863_Nitrosopumilus_ureiphilus,label,#A9A9A9
+AQQ12862_Nitrosopumilus_oxyclinae,label,#A9A9A9
+AQQ12861_Nitrosopumilus_cobalaminigenes,label,#A9A9A9
+ALV66058_Nitrosopumilus_maritimus,label,#A9A9A9
+AJM93357_Nitrosopumilus_piranensis,label,#A9A9A9
+CUR52539_Nitrosotalea_devanaterra,label,#A9A9A9
+ARS63889_Nitrosomarinus_catalina,label,#A9A9A9
+CCJ05654_Methylocystis_sp._SC2,label,#A9A9A9
+BAR90740_uncultured_beta,label,#A9A9A9
+AAC25057_Nitrosospira_multiformis,label,#A9A9A9
+CUS38627_Candidatus_Nitrospira_nitrificans,label,#A9A9A9
+CUQ66826_Candidatus_Nitrospira_inopinata,label,#A9A9A9
+CUS38424_Candidatus_Nitrospira_nitrosa,label,#A9A9A9
+TKS59187_Nitrospira_sp._RCB,label,#A9A9A9
+TKS61417_Nitrospira_sp._RCA,label,#A9A9A9
+THI85189_Nitrospira_sp._CG24A,label,#A9A9A9
+THJ14186_Nitrospira_sp._CG24C,label,#A9A9A9
+TRZ97369_Nitrospiraceae_bacterium,label,#A9A9A9
+SMH71743_Nitrosotalea_okcheonensis,label,#A9A9A9
+WP_134356236_Nitrosococcus_wardiae,label,#A9A9A9
+WP_011330982_Nitrosococcus_oceani,label,#A9A9A9
+WP_013031750_Nitrosococcus_halophilus,label,#A9A9A9
+WP_107804613_Nitrosomonas_oligotropha,label,#A9A9A9
+WP_107790533_Nitrosomonas_nitrosa,label,#A9A9A9
+WP_041357108_Nitrosomonas_europaea,label,#A9A9A9
+WP_011380154_Nitrosospira_multiformis,label,#A9A9A9
+WP_004179617_Nitrosospira_lacus,label,#A9A9A9
+WP_025042266_Nitrosospira,label,#A9A9A9
+WP_062557705_Nitrosomonas_ureae,label,#A9A9A9
+WP_046851395_Nitrosomonas_communis,label,#A9A9A9
+WP_013219693_Nitrosococcus_watsonii,label,#A9A9A9
+OQW57195_Nitrospira_sp._ST_bin4,label,#A9A9A9
+OQW36130_Nitrospira_sp._HN_bin3,label,#A9A9A9
+OQW38018_Nitrospira_sp._SG_bin1,label,#A9A9A9
+WP_087474114_Nitrospira_cf._moscoviensis_SBR1015,label,#A9A9A9
+WP_144731401_Nitrosocosmicus_arcticus,label,#A9A9A9
+sp_Q04507_Nitrosomonas_europaea,label,#A9A9A9
+gb_AAB38709__Nitrosospira_briensis,label,#A9A9A9
+gb_AAB38710__Nitrosovibrio_tenuis,label,#A9A9A9
+gb_AAB48015__Nitrosospira_multiformis_ATCC_25196,label,#A9A9A9
+gb_AAB48534__Nitrosospira_multiformis_ATCC_25196,label,#A9A9A9
+gb_AAB51760__Nitrosospira_multiformis_ATCC_25196,label,#A9A9A9
+gb_AAB53437__Nitrosospira_sp._NpAV,label,#A9A9A9
+gb_AAB57809__Nitrosococcus_oceani_ATCC_19707,label,#A9A9A9
+gb_AAB87792__Nitrosospira_sp._NpAV,label,#A9A9A9
+gb_AAB86881__Nitrosospira_sp._NpAV,label,#A9A9A9
+gb_AAC25057__Nitrosospira_multiformis,label,#A9A9A9
+gb_AAC25091__Nitrosococcus_oceani_ATCC_19707,label,#A9A9A9
+gb_AAF03938_AF153344_1_Nitrosococcus_watsoni_C_113,label,#A9A9A9
+gb_AAL86638_AF327919_1_Nitrosomonas_sp._JL21,label,#A9A9A9
+gb_ABA58955__Nitrosococcus_oceani_ATCC_19707,label,#A9A9A9
+gb_ABB74106__Nitrosospira_multiformis_ATCC_25196,label,#A9A9A9
+gb_ABB75616__Nitrosospira_multiformis_ATCC_25196,label,#A9A9A9
+gb_ABB76052__Nitrosospira_multiformis_ATCC_25196,label,#A9A9A9
+gb_ABM91805__uncultured_ammonia_oxidizing_beta_proteobacterium,label,#A9A9A9
+gb_ABM91807__uncultured_ammonia_oxidizing_beta_proteobacterium,label,#A9A9A9
+gb_ABM91811__uncultured_ammonia_oxidizing_beta_proteobacterium,label,#A9A9A9
+gb_ABM91813__uncultured_ammonia_oxidizing_beta_proteobacterium,label,#A9A9A9
+gb_ABM91815__uncultured_ammonia_oxidizing_beta_proteobacterium,label,#A9A9A9
+gb_ABM91817__uncultured_ammonia_oxidizing_beta_proteobacterium,label,#A9A9A9
+gb_ABM91819__uncultured_ammonia_oxidizing_beta_proteobacterium,label,#A9A9A9
+gb_ABM91821__uncultured_ammonia_oxidizing_beta_proteobacterium,label,#A9A9A9
+gb_ABM91823__uncultured_ammonia_oxidizing_beta_proteobacterium,label,#A9A9A9
+gb_ABM91825__uncultured_ammonia_oxidizing_beta_proteobacterium,label,#A9A9A9
+gb_ABM91827__uncultured_ammonia_oxidizing_beta_proteobacterium,label,#A9A9A9
+gb_ABN12967__uncultured_ammonia_oxidizing_beta_proteobacterium,label,#A9A9A9
+gb_ABN12977__uncultured_ammonia_oxidizing_beta_proteobacterium,label,#A9A9A9
+gb_ABN12992__uncultured_ammonia_oxidizing_beta_proteobacterium,label,#A9A9A9
+gb_ABR28950__uncultured_ammonia_oxidizing_beta_proteobacterium,label,#A9A9A9
+gb_ABR28957__uncultured_ammonia_oxidizing_beta_proteobacterium,label,#A9A9A9
+gb_ABR28969__uncultured_ammonia_oxidizing_beta_proteobacterium,label,#A9A9A9
+gb_ABR28976__uncultured_ammonia_oxidizing_beta_proteobacterium,label,#A9A9A9

@@ -1,0 +1,108 @@
+LABELS
+#use this template to change the leaf labels, or define/change the internal node names (displayed in mouseover popups)
+
+#lines starting with a hash are comments and ignored during parsing
+
+#=================================================================#
+#                    MANDATORY SETTINGS                           #
+#=================================================================#
+#select the separator which is used to delimit the data below (TAB,SPACE or COMMA).This separator must be used throughout this file (except in the SEPARATOR line, which uses space).
+
+SEPARATOR TAB
+#SEPARATOR SPACE
+#SEPARATOR COMMA
+
+#Internal tree nodes can be specified using IDs directly, or using the 'last common ancestor' method described in iTOL help pages
+#=================================================================#
+#       Actual data follows after the "DATA" keyword              #
+#=================================================================#
+DATA
+#NODE_ID,LABEL
+
+#Examples
+#define a name for an internal node
+#9031|9606,Metazoa
+
+#change the label for leaf node 9606
+#9606,Homo sapiens
+SMH71743.1-Nitrosotalea-okcheonensis	Nitrosotalea okcheonensis
+CUR52539.1-Nitrosotalea-devanaterra	Nitrosotalea devanaterra
+AQQ12863.1-Nitrosopumilus-ureiphilus	Nitrosopumilus ureiphilus
+ALV66058.1-Nitrosopumilus-maritimus	Nitrosopumilus maritimus
+AJM93357.1-Nitrosopumilus-piranensis	Nitrosopumilus piranensis
+AQQ12861.1-Nitrosopumilus-cobalaminigenes	Nitrosopumilus cobalaminigenes
+AQQ12862.1-Nitrosopumilus-oxyclinae	Nitrosopumilus oxyclinae
+ARS63889.1-Nitrosomarinus-catalina	Nitrosomarinus catalina
+AIF83036.1-Nitrososphaera-evergladensis-SR1	Nitrososphaera evergladensis SR1
+CBY93673.1-Nitrososphaera-viennensis-EN76	Nitrososphaera viennensis EN76
+AFU59457.1-Nitrososphaera-gargensis-Ga9.2	Nitrososphaera gargensis Ga9.2
+WP-107804613.1-Nitrosomonas-oligotropha	Nitrosomonas oligotropha
+WP-107790533.1-Nitrosomonas-nitrosa	Nitrosomonas nitrosa
+CCJ05654.1-Methylocystis-sp.-SC2	Methylocystis sp. SC2
+WP-134356236.1-Nitrosococcus-wardiae	Nitrosococcus wardiae
+WP-013031750.1-Nitrosococcus-halophilus	Nitrosococcus halophilus
+gi|6117983|gb|AAF03938.1|AF153344-1-Nitrosococcus-watsoni-C-113	Nitrosococcus watsoni C-113
+WP-013219693.1-Nitrosococcus-watsonii	Nitrosococcus watsonii
+WP-011330982.1-Nitrosococcus-oceani	Nitrosococcus oceani
+gi|76884274|gb|ABA58955.1|-Nitrosococcus-oceani-ATCC-19707	Nitrosococcus oceani ATCC-19707
+gi|2104720|gb|AAB57809.1|-Nitrosococcus-oceani-ATCC-19707	Nitrosococcus oceani ATCC-19707
+gi|3282845|gb|AAC25091.1|-Nitrosococcus-oceani-ATCC-19707	Nitrosococcus oceani ATCC-19707
+WP-046851395.1-Nitrosomonas-communis	Nitrosomonas communis
+sp|Q04507-Nitrosomonas-europaea	Nitrosomonas europaea
+WP-041357108.1-Nitrosomonas-europaea	Nitrosomonas europaea
+gi|19310210|gb|AAL86638.1|AF327919-1-Nitrosomonas-sp.-JL21	Nitrosomonas sp. JL21
+WP-062557705.1-Nitrosomonas-ureae	Nitrosomonas ureae
+gi|1732262|gb|AAB38709.1|-Nitrosospira-briensis	Nitrosospira briensis
+WP-025042266.1-Nitrosospira	Nitrosospira
+gi|1732264|gb|AAB38710.1|-Nitrosovibrio-tenuis	Nitrosovibrio tenuis
+gi|124110879|gb|ABM91805.1|-uncultured-ammonia-oxidizing-beta-proteobacterium	betaproteobacterium
+gi|124110897|gb|ABM91817.1|-uncultured-ammonia-oxidizing-beta-proteobacterium	betaproteobacterium
+gi|124110891|gb|ABM91813.1|-uncultured-ammonia-oxidizing-beta-proteobacterium	betaproteobacterium
+gi|124110888|gb|ABM91811.1|-uncultured-ammonia-oxidizing-beta-proteobacterium	betaproteobacterium
+gi|124110909|gb|ABM91825.1|-uncultured-ammonia-oxidizing-beta-proteobacterium	betaproteobacterium
+WP-004179617.1-Nitrosospira-lacus	Nitrosospira lacus
+BAR90740.1-uncultured-beta		betaproteobacterium
+gi|2062746|gb|AAB53437.1|-Nitrosospira-sp.-NpAV	Nitrosospira sp. NpAV
+gi|2454579|gb|AAB87792.1|-Nitrosospira-sp.-NpAV	Nitrosospira sp. NpAV
+gi|2641611|gb|AAB86881.1|-Nitrosospira-sp.-NpAV	Nitrosospira sp. NpAV
+gi|124110894|gb|ABM91815.1|-uncultured-ammonia-oxidizing-beta-proteobacterium	betaproteobacterium
+gi|124110903|gb|ABM91821.1|-uncultured-ammonia-oxidizing-beta-proteobacterium	betaproteobacterium
+gi|124110882|gb|ABM91807.1|-uncultured-ammonia-oxidizing-beta-proteobacterium	betaproteobacterium
+gi|124110900|gb|ABM91819.1|-uncultured-ammonia-oxidizing-beta-proteobacterium	betaproteobacterium
+gi|124110906|gb|ABM91823.1|-uncultured-ammonia-oxidizing-beta-proteobacterium	betaproteobacterium
+gi|124110912|gb|ABM91827.1|-uncultured-ammonia-oxidizing-beta-proteobacterium	betaproteobacterium
+gi|124491404|gb|ABN12992.1|-uncultured-ammonia-oxidizing-beta-proteobacterium	betaproteobacterium
+gi|149782682|gb|ABR28976.1|-uncultured-ammonia-oxidizing-beta-proteobacterium	betaproteobacterium
+gi|149782630|gb|ABR28950.1|-uncultured-ammonia-oxidizing-beta-proteobacterium	betaproteobacterium
+gi|149782668|gb|ABR28969.1|-uncultured-ammonia-oxidizing-beta-proteobacterium	betaproteobacterium
+gi|1858017|gb|AAB48534.1|-Nitrosospira-multiformis-ATCC-25196	Nitrosospira multiformis ATCC-25196
+gi|1850144|gb|AAB48015.1|-Nitrosospira-multiformis-ATCC-25196	Nitrosospira multiformis ATCC-25196
+gi|1935036|gb|AAB51760.1|-Nitrosospira-multiformis-ATCC-25196	Nitrosospira multiformis ATCC-25196
+gi|82409997|gb|ABB74106.1|-Nitrosospira-multiformis-ATCC-25196	Nitrosospira multiformis ATCC-25196
+gi|82411507|gb|ABB75616.1|-Nitrosospira-multiformis-ATCC-25196	Nitrosospira multiformis ATCC-25196
+gi|82411943|gb|ABB76052.1|-Nitrosospira-multiformis-ATCC-25196	Nitrosospira multiformis ATCC-25196
+WP-011380154.1-Nitrosospira-multiformis	Nitrosospira multiformis
+gi|124491374|gb|ABN12977.1|-uncultured-ammonia-oxidizing-beta-proteobacterium	betaproteobacterium
+gi|124491354|gb|ABN12967.1|-uncultured-ammonia-oxidizing-beta-proteobacterium	betaproteobacterium
+gi|149782644|gb|ABR28957.1|-uncultured-ammonia-oxidizing-beta-proteobacterium	betaproteobacterium
+gi|3282757|gb|AAC25057.1|-Nitrosospira-multiformis	Nitrosospira multiformis
+AAC25057.1-Nitrosospira-multiformis	Nitrosospira multiformis
+TKS61417.1-Nitrospira-sp.-RCA	Nitrospira sp. RCA
+OQW57195.1-Nitrospira-sp.-ST-bin4	Nitrospira sp. ST-bin4
+WP-087474114.1-Nitrospira-cf.-moscoviensis-SBR1015	Nitrospira cf. moscoviensis SBR1015
+OQW38018.1-Nitrospira-sp.-SG-bin1	Nitrospira sp. SG-bin1
+CUQ66826.1-Candidatus-Nitrospira-inopinata	Nitrospira inopinata
+CUS38627.1-Candidatus-Nitrospira-nitrificans	Nitrospira nitrificans
+CUS38424.1-Candidatus-Nitrospira-nitrosa	Nitrospira nitrosa
+
+#leaf label for node 9606 will be displayed in green, bold and twice the regular font size
+#9606 label #00ff00 bold 2
+
+#leaf label for node 9031 will be displayed in yellow, bold italic and half the regular font size
+#9031 label #ffff00 bold-italic 0.5
+
+#leaf label for node 8015 will be displayed in blue
+#8015 label #0000ff
+
+#leaf label for node 9606 will have a semi-transparent red background
+#9606 label_background rgba(255,0,0,0.5)

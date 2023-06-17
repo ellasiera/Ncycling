@@ -1,0 +1,178 @@
+TREE_COLORS
+#use this template to define branch colors and styles, colored ranges and label colors/font styles/backgrounds
+#lines starting with a hash are comments and ignored during parsing
+
+#=================================================================#
+#                    MANDATORY SETTINGS                           #
+#=================================================================#
+#select the separator which is used to delimit the data below (TAB,SPACE or COMMA).This separator must be used throughout this file (except in the SEPARATOR line, which uses space).
+
+SEPARATOR TAB
+#SEPARATOR SPACE
+#SEPARATOR COMMA
+
+#First 3 fields define the node, type and color
+#Possible types are:
+#'range': defines a colored range (colored background for labels/clade)
+#'clade': defines color/style for all branches in a clade
+#'branch': defines color/style for a single branch
+#'label': defines font color/style for the leaf label
+#'label background': defines the leaf label background color
+
+#The following additional fields are required:
+#for 'range', field 4 defines the colored range label (used in the legend)
+
+#The following additional fields are optional:
+#for 'label', field 4 defines the font style ('normal',''bold', 'italic' or 'bold-italic') and field 5 defines the numeric scale factor for the font size (eg. with value 2, font size for that label will be 2x the standard size)
+#for 'clade' and 'branch', field 4 defines the branch style ('normal' or 'dashed') and field 5 defines the branch width scale factor (eg. with value 0.5, branch width for that clade will be 0.5 the standard width)
+
+#Internal tree nodes can be specified using IDs directly, or using the 'last common ancestor' method described in iTOL help pages
+#=================================================================#
+#       Actual data follows after the "DATA" keyword              #
+#=================================================================#
+DATA
+#NODE ID TYPE COLOR LABEL OR STYLE SIZE FACTOR
+
+#Examples
+#internal node with solid branches colored blue and twice the standard width
+#9031|9606 clade #0000ff normal 2
+#internal node with dashed branches colored red and one half the standard width
+#601|340 clade #ff0000 dashed 0.5
+#a single internal branch colored green, dashed and 5 times the normal width
+#915|777 branch #00ff00 dashed 5
+
+#colored range covering all leaves of an internal node,  colored red and with label 'Eukaryota'
+#184922|9606 range #ff0000 Eukaryota
+#examples of colored ranges from iTOL's Tree of Life
+#2190|2287 range #aaffaa Archaea
+#623|1502 range #aaaaff Bacteria
+
+H1_Bulk_28_FD_scaffold_1059_2	label	#ca2c92
+H1_Bulk_28_FD_scaffold_4052_1	label	#ca2c92
+H1_Bulk_28_FD_scaffold_5497_1	label	#ca2c92
+H1_Bulk_29_scaffold_14062_1	label	#ca2c92
+H1_Bulk_29_scaffold_14124_1	label	#ca2c92
+H1_Bulk_29_scaffold_25625_1	label	#ca2c92
+H1_Bulk_30_scaffold_11979_1	label	#ca2c92
+H1_Bulk_30_scaffold_13362_1	label	#ca2c92
+H1_Bulk_30_scaffold_14890_1	label	#ca2c92
+H1_Bulk_30_scaffold_5024_1	label	#ca2c92
+H1_Bulk_Litter_4_scaffold_15079_1	label	#ca2c92
+H1_Bulk_Litter_4_scaffold_19579_1	label	#ca2c92
+H1_Bulk_Litter_4_scaffold_20458_2	label	#ca2c92
+H1_Bulk_Litter_5_scaffold_17003_1	label	#ca2c92
+H1_Bulk_Litter_6_scaffold_10533_1	label	#ca2c92
+H1_Bulk_Litter_6_scaffold_10714_2	label	#ca2c92
+H1_Bulk_Litter_6_scaffold_11653_2	label	#ca2c92
+H1_Bulk_Litter_6_scaffold_12923_1	label	#ca2c92
+H1_Bulk_Litter_6_scaffold_14056_1	label	#ca2c92
+H1_Bulk_Litter_6_scaffold_14223_1	label	#ca2c92
+H1_Bulk_Litter_6_scaffold_15388_1	label	#ca2c92
+H1_Bulk_Litter_6_scaffold_15668_1	label	#ca2c92
+H1_Bulk_Litter_6_scaffold_17881_1	label	#ca2c92
+H1_Bulk_Litter_6_scaffold_1970_4	label	#ca2c92
+H1_Bulk_Litter_6_scaffold_20915_1	label	#ca2c92
+H1_Bulk_Litter_6_scaffold_21176_1	label	#ca2c92
+H1_Bulk_Litter_6_scaffold_21372_1	label	#ca2c92
+H1_Bulk_Litter_6_scaffold_4394_3	label	#ca2c92
+H1_Bulk_Litter_6_scaffold_7786_1	label	#ca2c92
+H1_Bulk_Litter_6_scaffold_7913_2	label	#ca2c92
+H1_Bulk_Litter_6_scaffold_8521_2	label	#ca2c92
+H1_Bulk_Litter_6_scaffold_9334_2	label	#ca2c92
+H1_Rhizo_25_scaffold_19792_1	label	#ca2c92
+H1_Rhizo_27_scaffold_15738_1	label	#ca2c92
+H1_Rhizo_27_scaffold_18569_1	label	#ca2c92
+H1_Rhizo_27_scaffold_27801_1	label	#ca2c92
+H1_Rhizo_Litter_1_scaffold_15542_1	label	#ca2c92
+H2_Bulk_34_12568_1	label	#ca2c92
+H2_Bulk_35_scaffold_12605_2	label	#ca2c92
+H2_Bulk_35_scaffold_14575_1	label	#ca2c92
+H2_Bulk_35_scaffold_17095_1	label	#ca2c92
+H2_Bulk_35_scaffold_19563_1	label	#ca2c92
+H2_Bulk_35_scaffold_22054_1	label	#ca2c92
+H2_Bulk_36_scaffold_10869_1	label	#ca2c92
+H2_Bulk_Litter_10_scaffold_15082_1	label	#ca2c92
+H2_Bulk_Litter_10_scaffold_4839_1	label	#ca2c92
+H2_Bulk_Litter_11_11113_1	label	#ca2c92
+H2_Bulk_Litter_11_16744_1	label	#ca2c92
+H2_Bulk_Litter_11_22168_1	label	#ca2c92
+H2_Bulk_Litter_12_scaffold_16677_1	label	#ca2c92
+H2_Bulk_Litter_12_scaffold_17836_1	label	#ca2c92
+H2_Rhizo_31_scaffold_3514_1	label	#ca2c92
+H2_Rhizo_32_scaffold_10233_1	label	#ca2c92
+H2_Rhizo_33_scaffold_24313_1	label	#ca2c92
+H2_Rhizo_33_scaffold_32965_1	label	#ca2c92
+H2_Rhizo_Litter_49_scaffold_20682_1	label	#ca2c92
+H2_Rhizo_Litter_49_scaffold_25186_1	label	#ca2c92
+H2_Rhizo_Litter_49_scaffold_56909_1	label	#ca2c92
+H2_Rhizo_Litter_7_scaffold_9163_1	label	#ca2c92
+H2_Rhizo_Litter_8_scaffold_14017_1	label	#ca2c92
+H3_Bulk_40_scaffold_13151_1	label	#ca2c92
+H3_Bulk_41_scaffold_17380_1	label	#ca2c92
+H3_Bulk_41_scaffold_17997_1	label	#ca2c92
+H3_Bulk_41_scaffold_20336_1	label	#ca2c92
+H3_Bulk_41_scaffold_22969_1	label	#ca2c92
+H3_Bulk_41_scaffold_23076_1	label	#ca2c92
+H3_Bulk_42_scaffold_10164_1	label	#ca2c92
+H3_Bulk_42_scaffold_10265_1	label	#ca2c92
+H3_Bulk_42_scaffold_10654_2	label	#ca2c92
+H3_Bulk_42_scaffold_11011_1	label	#ca2c92
+H3_Bulk_42_scaffold_11273_1	label	#ca2c92
+H3_Bulk_42_scaffold_12005_1	label	#ca2c92
+H3_Bulk_42_scaffold_15218_1	label	#ca2c92
+H3_Bulk_42_scaffold_16497_2	label	#ca2c92
+H3_Bulk_42_scaffold_21426_1	label	#ca2c92
+H3_Bulk_42_scaffold_2178_4	label	#ca2c92
+H3_Bulk_42_scaffold_22136_1	label	#ca2c92
+H3_Bulk_42_scaffold_22563_1	label	#ca2c92
+H3_Bulk_42_scaffold_2813_1	label	#ca2c92
+H3_Bulk_42_scaffold_3937_1	label	#ca2c92
+H3_Bulk_42_scaffold_3976_2	label	#ca2c92
+H3_Bulk_42_scaffold_5647_1	label	#ca2c92
+H3_Bulk_42_scaffold_6440_1	label	#ca2c92
+H3_Bulk_42_scaffold_6875_1	label	#ca2c92
+H3_Bulk_42_scaffold_7729_1	label	#ca2c92
+H3_Bulk_Litter_16_16164_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_12322_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_15824_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_16503_2	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_17529_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_17761_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_20562_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_20837_2	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_22119_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_22320_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_24576_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_24654_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_25355_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_26051_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_29081_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_32181_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_32538_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_33084_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_33206_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_36523_2	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_37710_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_37777_1	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_5594_2	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_7340_2	label	#ca2c92
+H3_Bulk_Litter_17_scaffold_9836_3	label	#ca2c92
+H3_Rhizo_39_scaffold_290_1	label	#ca2c92
+H3_Rhizo_Litter_14_scaffold_23848_1	label	#ca2c92
+H3_Rhizo_Litter_15_scaffold_15376_1	label	#ca2c92
+H4_Bulk_46_scaffold_12351_1	label	#ca2c92
+H4_Bulk_46_scaffold_13346_1	label	#ca2c92
+H4_Bulk_46_scaffold_17836_1	label	#ca2c92
+H4_Bulk_46_scaffold_28710_1	label	#ca2c92
+H4_Bulk_46_scaffold_30548_1	label	#ca2c92
+H4_Bulk_46_scaffold_31750_1	label	#ca2c92
+H4_Bulk_47_scaffold_17434_1	label	#ca2c92
+H4_Bulk_48_scaffold_16237_1	label	#ca2c92
+H4_Bulk_Litter_22_scaffold_26863_1	label	#ca2c92
+H4_Bulk_Litter_22_scaffold_28879_1	label	#ca2c92
+H4_Bulk_Litter_23_scaffold_17398_1	label	#ca2c92
+H4_Bulk_Litter_24_scaffold_31739_1	label	#ca2c92
+H4_Bulk_Litter_24_scaffold_40367_1	label	#ca2c92
+H4_Rhizo_43_scaffold_18915_1	label	#ca2c92
+H4_Rhizo_43_scaffold_27540_1	label	#ca2c92
+H4_Rhizo_43_scaffold_9431_1	label	#ca2c92
