@@ -1,0 +1,665 @@
+---
+title: "N cycling in rhizosphere, detritusphere and bulk soil"
+author: "Ella Sieradzki"
+date: "2022-10-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+#Load libraries
+library("DESeq2")
+library("Biobase")
+library("data.table")
+library("pheatmap")
+library("vegan")
+library("gplots")
+library("tidyverse")
+library("compositions")
+library("ape")
+library("MASS")
+library("ggpubr")
+library("rstatix")
+library("ggordiplots")
+library("plotly")
+```
+```{r}
+#Load files
+infile = "Rsubread_output_w_K01430.csv"
+mtx_counts = read.csv(infile, header = TRUE, row.names = 1)
+ann <- read.delim("ann_for_Rsubread_new.txt", sep="\t", header=F, stringsAsFactors = F)
+ann <- ann[, c(1,3)]
+colnames(ann) <- c("GeneID", "KO")
+# Fix ambiguous annotation of glnB misidentified as glnK (based on HMM scores)
+ann <- ann %>%
+  filter(!(duplicated(GeneID) & KO == "K04752")) %>%
+  filter(GeneID == "H4_Bulk_Litter_22_scaffold_15964_1" & KO =="K04751") %>%
+  filter(GeneID == "H4_Bulk_Litter_23_scaffold_125109_2" & KO =="K03320")
+#temp <- merge(mtx_counts, ann, by.y="GeneID", by.x="row.names", sort=T)
+ko_to_gene <- read.csv("ko_to_gene.csv", header=T)[,1:5]
+mtx_matrix = as.matrix(sapply(mtx_counts, as.integer)) 
+rownames(mtx_matrix) = rownames(mtx_counts)
+mtx_matrix[is.na(mtx_matrix)] = 0
+mtx_matrix = mtx_matrix[,order(colnames(mtx_matrix))]
+colnames(mtx_matrix) <- gsub(".mapped.bam", "", colnames(mtx_matrix))
+colnames(mtx_matrix) <- gsub(".", "_", colnames(mtx_matrix), fixed = TRUE)
+# Try without throwing out H1_Rhizo_Litter_2
+mtx_matrix <- mtx_matrix[, -(which(colnames(mtx_matrix) %in% c("H3_Rhizo_39", "H1_Rhizo_Litter_2", "H2_Rhizo_Litter_9")))]
+
+designfile = "mtx_design_ecofun_genomes4.txt" 
+# Without time point 4
+#designfile = "From_Erin/mtx_design_ecofun_genomes3.txt" 
+#mtx_matrix <- mtx_matrix[,-which(colnames(mtx_matrix) %like% "H4_")]
+
+mtx_design = read.delim(designfile, header = TRUE, row.names = 1)
+mtx_design <- mtx_design[!(rownames(mtx_design) %in% c("H3_Rhizo_39", "H1_RhizoLitter_2", "H2_RhizoLitter_9")),] # Remove these because these columns are mostly 0s, was messing up the geometric mean 
+
+colnames(mtx_matrix) <- rownames(mtx_design)
+```
+```{r}
+#Run DESeq2
+design(dds) = ~ group_htl
+dds = DESeq(dds)
+res = results(dds)
+resultsNames(dds)
+
+dds_counts = counts(dds, normalized=TRUE)
+rownames(dds_counts) <- rownames(res)
+dds_ann <- merge(dds_counts, ann, by.x="row.names", by.y="GeneID")
+write.csv(dds_ann, file = "htl_ORFs.csv")
+nit <- dds_ann[dds_ann$KO %in% ko_to_gene$KO,]
+write.csv(nit, file = "DESeq_normalized_nitrogen.csv", row.names = F)
+nit <- nit[,!(colnames(nit) %in% c("H3_Rhizo_39", "H1_RhizoLitter_2", "H2_RhizoLitter_9"))] # Remove failed samples
+saveRDS(dds, file = "dds_htl_nitrogen.rds")
+```
+```{r}
+# Load previous DESeq results
+dds <- readRDS(file = "dds_htl_nitrogen.rds")
+nit <- read.delim("DESeq_normalized_nitrogen.txt", sep="\t", header=T, stringsAsFactors = F) %>%
+  column_to_rownames("Row.names")
+```
+```{r}
+# General trends: PERMANOVA, PCoA and NMDS
+#to run only the first 3 time points
+#nit <- nit[,-which(colnames(nit) %like% "H4_")]
+
+dds_bray_dm <- vegdist(t(nit[,-c(1,ncol(nit))]), method="bray", na.rm=T)
+#dds_bray_dm = read.delim("DESeq_normalized_nitrogen/bray_curtis_dm.txt",header = TRUE, row.names = 1)
+#dds_bray_dm <- dds_bray_dm[!(rownames(dds_bray_dm) %in% c("H3_Rhizo_39", "H1_RhizoLitter_2", "H2_RhizoLitter_9")), !(colnames(dds_bray_dm) %in% c("H3_Rhizo_39", "H1_RhizoLitter_2", "H2_RhizoLitter_9"))]
+dds_dist = as.dist(dds_bray_dm)
+dds_metaMDS<-metaMDS(dds_dist, distance = "bray", k = 2, trymax = 1000, autotransform =FALSE, noshare = 0.1, wascores = TRUE, expand = TRUE, trace = 1, plot = TRUE)
+adonis(dds_dist ~ location * treatment * harvest, data = mtx_design, strata = mtx_design$harvest, permutations = 10000)
+
+#PCoA - figure 1
+# Panel A - all time points
+pcoa_bray <- rda(t(nit[,-ncol(nit)]))
+PCA_palette <- c("#FA9FD5", "#CB99E4", "#A3D8F9", "#9CF980", 
+                 "#FB79C6", "#BC70E3", "#6BC3FA", "#6AEA43", 
+                 "#FA48B2", "#A839E1", "#2FABF9", "#45C020", 
+                 "#E10086", "#8704CA", "#027FCD", "#218403")
+
+pcoa_bray <- pcoa(dds_bray_dm)
+jac_variances <- data.frame(pcoa_bray$values$Relative_eig) %>% 
+  rownames_to_column(var = "PCaxis") %>% 
+  data.frame
+pcoa_bray_df <- data.frame(pcoa_bray$vectors[, c(1,2)]) %>% 
+  rownames_to_column(var = "sample") %>% 
+  data.frame
+pcoa_bray_df$grp <- sub("_[0-9]*$", "", pcoa_bray_df$sample)
+pcoa_bray_df$shape_grp <- sub("H[1-3]_", "", pcoa_bray_df$grp)
+pcoa_bray_df$time <- gsub("_.*", "", pcoa_bray_df$grp)
+eigenvalues <- round(jac_variances[,2], digits = 4)*100
+A <- ggplot(pcoa_bray_df, aes(x = Axis.1, y = Axis.2, group = time)) +
+  geom_point(aes(fill=grp), size = 2, shape=21) +
+  ylab(paste0('Co 2 ',eigenvalues[2],'%')) + #Extract y axis value from variance
+  xlab(paste0('Co 1 ',eigenvalues[1],'%')) + #Extract x axis value from variance
+  scale_fill_manual(values = PCA_palette, name = 'Env') +
+  ggtitle('Log-Ratio PCoA Ordination') +
+  coord_fixed(ratio = 1) +
+  theme_bw() + stat_ellipse(level = 0.9)
+
+# Only first 3 time points - panel B
+nit_noT4 <- nit %>%
+  select(!starts_with("H4"))
+dds_bray_dm_noT4 <- vegdist(t(nit_noT4[,-c(1,ncol(nit_noT4))]), method="bray", na.rm=T)
+dds_dist_noT4 = as.dist(dds_bray_dm_noT4)
+pcoa_bray_noT4 <- pcoa(dds_dist_noT4)
+jac_variances <- data.frame(pcoa_bray_noT4$values$Relative_eig) %>% 
+  rownames_to_column(var = "PCaxis") %>% 
+  data.frame
+pcoa_bray_df_noT4 <- data.frame(pcoa_bray_noT4$vectors[, c(1,2)]) %>% 
+  rownames_to_column(var = "sample") %>% 
+  data.frame
+pcoa_bray_df_noT4$grp <- sub("_[0-9]*$", "", pcoa_bray_df_noT4$sample)
+pcoa_bray_df_noT4$shape_grp <- sub("H[1-3]_", "", pcoa_bray_df_noT4$grp)
+# Variance explained
+eigenvalues <- round(jac_variances[,2], digits = 4)*100
+
+B <- ggplot(pcoa_bray_df_noT4, aes(x = Axis.1, y = Axis.2, color = shape_grp)) +
+  geom_point(aes(fill=grp), size = 2, shape=21) +
+  ylab(paste0('Co 2 ',eigenvalues[2],'%')) + #Extract y axis value from variance
+  xlab(paste0('Co 1 ',eigenvalues[1],'%')) + #Extract x axis value from variance
+  scale_fill_manual(values = PCA_palette, name = 'Env') +
+  scale_color_manual(values = PCA_palette[13:16], name = 'Env') +
+  ggtitle('Log-Ratio PCoA Ordination') +
+  coord_fixed(ratio = 1) +
+  theme_bw() + stat_ellipse(level = 0.9)
+
+ggarrange(A, B, nrow=1, ncol=2)
+ggsave("Ncycling_paper/fig1_stats.pdf", width=8, height=6)
+```
+```{r}
+# GS/GOGAT to GDH ratio in transcripts (not genomes) - figure 4 panel C
+temp <- nit %>%
+  left_join(ko_to_gene) %>%
+  filter(gene == "glnA" | gene == "gudB") %>% # pick only the most common gene per pathway
+  #filter(pathway == "GSGOGAT" | pathway == "GDH") %>% # pick all genes from both pathways
+  select(c(starts_with("H"), "pathway")) %>%
+  reshape2::melt() %>%
+  group_by(variable, pathway) %>%
+  summarize_at("value", sum) %>%
+  group_by(variable) %>%
+  mutate(rat = c(value[2] / value[1], NA)) %>%
+  ungroup() %>%
+  mutate(time = gsub("_.*", "", variable)) %>%
+  mutate(grp = gsub("_.*", "", gsub("H[1-4]_", "", variable))) %>%
+  filter(!is.na(rat)) %>%
+  select(variable, rat, time, grp)
+
+ggboxplot(temp, x = "time", y = "rat", fill="grp") + 
+  theme_bw() + 
+  scale_fill_manual(values=c("#a6cee3", "#1f78b4", "#cab2d6", "#6a3d9a")) + 
+  xlab("Time") + ylab("ratio of GS/GOGAT to GDH")
+ggsave("Ncycling_paper/Ncycle_fig_4_glnA_gudB_ratio.pdf")
+
+adonis2(temp$rat~temp$grp*temp$time)
+# Df SumOfSqs      R2      F Pr(>F)   
+# temp$grp            3  0.07545 0.07966 1.9121  0.134   
+# temp$time           3  0.35723 0.37714 9.0525  0.002 **
+# temp$grp:temp$time  9  0.13304 0.14046 1.1238  0.360   
+# Residual           29  0.38146 0.40273                 
+# Total              44  0.94718 1.00000         
+```
+```{r}
+# amoA vs. Thaumarchaeal protease expression in transcripts (not genomes) - figure 3 panel E
+temp <- read.delim("amoa_Thaum_prot.tsv", header=T, stringsAsFactors = F, sep="\t")
+amoa <- temp[temp$gene == "amoa",] %>% select(!gene) %>% rename(amoa = value, grp = grp.x)
+temp <- temp[temp$gene == "prot",] %>% select(!gene) %>% rename(prot = value, grp = grp.x) %>%
+  left_join(amoa)
+
+ggplot(temp, aes(x = prot, y = amoa)) + 
+  geom_point(stat = "identity", aes(color=grp), size=2) +
+  theme_bw() + 
+  scale_color_manual(values=c("#a6cee3", "#1f78b4", "#cab2d6", "#6a3d9a")) + 
+  xlab("Thaumarchaeota extracellular protease") + ylab("Thaumarchaeota amoA") +
+  geom_smooth(method='lm', formula= y~x, color="black")
+ggsave("Ncycling_paper/Ncycle_fig_3E_amoA_prot_ratio.pdf")
+```
+```{r}
+# Separate denitrifier and nitrifier nirK
+# From the tree, the denitrifiers (bacterial nirK) are 
+nirK_by_domain <- read.csv("nirK_dom.csv", header=T, sep=";")
+nirK_Archaea <- nirK_by_domain$gene_ID[nirK_by_domain$dom == "A"]
+nirK_Bacteria <- nirK_by_domain$gene_ID[nirK_by_domain$dom == "B"]
+# recreate sup. fig. 1 with separation of nitrifier nirK and denitrifier nirK
+#raw_genes <- read.delim("DESeq_normalized_nitrogen.csv", header=T, sep=";")
+raw_genes$KO[raw_genes$Row.names %in% nirK_Archaea] <- "K00368A"
+raw_genes$KO[raw_genes$Row.names %in% nirK_Bacteria] <- "K00368B"
+raw_genes <- raw_genes %>% column_to_rownames("Row.names") %>% pivot_longer(cols = !KO, names_to = "sample", values_to = "value") %>% group_by(KO, sample) %>% summarise(value = sum(value))
+
+raw_genes$variable <- sub("_[0-9]*$", "", raw_genes$sample)
+raw_genes <- raw_genes %>% group_by(KO,variable) %>% summarise(value = mean(value))
+raw_genes <- as.data.frame(acast(raw_genes, KO~variable))
+
+ko_to_gene <- read.csv("ko_to_gene.csv")
+raw_genes <- merge(raw_genes, ko_to_gene, by.x="row.names", by.y="KO")
+colnames(raw_genes)[1] <- "KO"
+raw_genes$gene[raw_genes$KO == "K00368A"] <- "nirK nit"
+raw_genes$gene[raw_genes$KO == "K00368B"] <- "nirK den"
+
+sampord <- c(2,6,10,14,3,7,11,15,4,8,12,16,5,9,13,17)
+raw_genes <- raw_genes[raw_genes$pathway %in% c("ANRA", "DNRA", "Denitrification", "Nitrification", "reg", "transport", "Exoprot", "GDH", "GSGOGAT", "NO_detox"),]
+raw_genes <- raw_genes[order(raw_genes$pathway),]
+hist(rowSums(raw_genes[,2:17])) # To determine cutoffs for high, medium and low coverage for improved visibility of the heatmaps
+
+my_palette <- colorRampPalette(c('#ffffff','#8856a7'))(n = 299)
+highcov <- raw_genes[rowSums(raw_genes[,2:17])>150000,] %>% pivot_longer(cols = c("KO", starts_with("H[1-4]")), values_to = "cov")
+midcov <- raw_genes[rowSums(raw_genes[,2:17])<=150000 & rowSums(raw_genes[,2:17])>=50000,]
+lowcov <- raw_genes[rowSums(raw_genes[,2:17])<=50000,]
+
+pdf("sup_fig_1_A.pdf", width=7)
+heatmap.2(as.matrix(highcov[,sampord]), col=my_palette, cexCol = 0.8, cexRow=1, density.info="none", trace="none", labRow = highcov$gene, Rowv=FALSE, Colv=FALSE, dendrogram = "none")
+dev.off()
+pdf("sup_fig_1_B.pdf", width=7)
+heatmap.2(as.matrix(midcov[,sampord]), col=my_palette, cexCol = 0.8, cexRow=1, density.info="none", trace="none", labRow = midcov$gene, Rowv=FALSE, Colv=FALSE, dendrogram = "none")
+dev.off()
+pdf("sup_fig_1_C.pdf", width=7)
+heatmap.2(as.matrix(lowcov[,sampord]), col=my_palette, cexCol = 0.8, cexRow=0.5, density.info="none", trace="none", labRow = lowcov$gene, Rowv=FALSE, Colv=FALSE, dendrogram = "none")
+dev.off()
+```
+```{r}
+# amoA vs. nirK
+data_cols <- which(colnames(raw_genes) %like% "^H[1-4]")
+raw_genes <- raw_genes %>% column_to_rownames("Row.names") %>% pivot_longer(cols = !KO, names_to = "sample", values_to = "value") %>% group_by(KO, sample) %>% summarise(value = sum(value))
+ko_to_gene <- read.csv("ko_to_gene.csv")
+raw_genes <- merge(raw_genes, ko_to_gene, by="KO")
+amoA_nirK <-  data.frame(cbind(raw_genes[raw_genes$gene == "amoA", "value"], raw_genes[raw_genes$gene == "nirK", c("value", "sample")]))
+
+amoA_nirK$grp <- gsub("_[0-9]*$", "", gsub("H[1-4]_", "", amoA_nirK$sample))
+colnames(amoA_nirK)[1:2] <- c("amoA", "nirK")
+
+# filter outliers
+amoA_nirK <- amoA_nirK %>% filter(amoA < 7000) # These two drop the R^2 to 0.31 and increase p to 0.04
+
+ggplot(data = amoA_nirK, aes(x = amoA, y = nirK)) + 
+  ylab("Normalized recruitment to nirK transcripts") + 
+  scale_colour_manual(values=c("#1f78b4", "#a6cee3", "#6a3d9a", "#cab2d6")) + 
+  xlab("Normalized recruitment to amoA transcripts") + 
+  geom_point(aes(colour=grp), size=1, stroke=2, fill="black") + 
+  theme_bw() + theme(axis.text.x = element_text(angle = 90), panel.grid=element_blank()) +
+  geom_smooth(method = "lm", se = FALSE, color="darkgrey") +
+  stat_regline_equation(label.x = 5, label.y = 3000) +
+  stat_cor(label.x = 5, label.y = 2000)
+```
+```{r}
+# summarized gene expression
+raw_genes <- read.delim("DESeq_normalized_nitrogen.csv", header=T, sep=";")
+ko_to_gene <- read.csv("ko_to_gene.csv")
+raw_genes <- merge(raw_genes, ko_to_gene, by="KO")
+raw_genes <- raw_genes[order(raw_genes$pathway),]
+
+raw_genes$variable <- sub("_[0-9]*$", "", raw_genes$sample)
+raw_genes <- raw_genes %>% group_by(KO,variable) %>% summarise(value = mean(value))
+raw_genes <- as.data.frame(acast(raw_genes, KO~variable))
+raw_genes <- merge(raw_genes, ko_to_gene, by.x="row.names", by.y="KO")
+colnames(raw_genes)[1] <- "KO"
+sampord <- c(2,6,10,14,3,7,11,15,4,8,12,16,5,9,13,17)
+raw_genes <- raw_genes[raw_genes$pathway %in% c("ANRA", "DNRA", "Denitrification", "Nitrification", "reg", "transport", "Exoprot", "GDH", "GSGOGAT", "NO_detox"),]
+raw_genes <- raw_genes[order(raw_genes$pathway),]
+hist(rowSums(raw_genes[,2:17]))
+
+heatmap.2(as.matrix(raw_genes[,sampord]), col=my_palette, cexCol = 0.8, cexRow=1, density.info="none", trace="none", labRow = raw_genes$gene, Rowv=FALSE, Colv=FALSE)
+highcov <- raw_genes[rowSums(raw_genes[,2:17])>150000,]
+midcov <- raw_genes[rowSums(raw_genes[,2:17])<=150000 & rowSums(raw_genes[,2:17])>=50000,]
+lowcov <- raw_genes[rowSums(raw_genes[,2:17])<=50000,]
+heatmap.2(as.matrix(highcov[,sampord]), col=my_palette, cexCol = 0.8, cexRow=1, density.info="none", trace="none", labRow = highcov$gene, Rowv=FALSE, Colv=FALSE)
+heatmap.2(as.matrix(midcov[,sampord]), col=my_palette, cexCol = 0.8, cexRow=1, density.info="none", trace="none", labRow = midcov$gene, Rowv=FALSE, Colv=FALSE)
+heatmap.2(as.matrix(lowcov[,sampord]), col=my_palette, cexCol = 0.8, cexRow=0.5, density.info="none", trace="none", labRow = lowcov$gene, Rowv=FALSE, Colv=FALSE)
+
+write.csv(raw_genes, "DESeq_norm_counts_grp.csv", row.names = FALSE)
+```
+
+```{r}
+# Statistical testing of expression of assembled ORFs 
+ko_to_gene <- read.csv("ko_to_gene.csv")
+df <- read.delim("DESeq_normalized_nitrogen.csv", header=T, sep=";")
+df <- merge(df, ko_to_gene[,c("KO", "gene", "pathway")])
+# Separate nirK into archaeal and bacterial (nitrification and denitrification respectively)
+nirK_by_domain <- read.csv("nirK_dom.csv", header=T, sep=";")
+nirK_Archaea <- nirK_by_domain$gene_ID[nirK_by_domain$dom == "A"]
+nirK_Bacteria <- nirK_by_domain$gene_ID[nirK_by_domain$dom == "B"]
+df$KO[df$KO=="K00368" & (df$Row.names %in% nirK_Archaea)] <- "K00368A"
+df$KO[df$KO=="K00368" & (df$Row.names %in% nirK_Bacteria)] <- "K00368B"
+
+kos <- unique(df$KO)
+data_cols <- colnames(df)[colnames(df) %like% "^H[1-4]"]
+# Kruskal-Wallis test per gene - three way non-parametric ANOVA
+# Setting up a matrix for the results
+p_df <- as.data.frame(matrix(nrow=length(kos), ncol=15))
+p_df[,1] <- kos
+colnames(p_df) <- c("KO", "time F", "treat F", "loc F", "time*treat F", "time*loc F", "treat*loc F", "time*treat*loc F", "time p", "treat p", "loc p", "time*treat p", "time*loc p", "treat*loc p", "time*treat*loc p")
+r=1
+# Melting the betas dataframe
+nm <- melt(df[, c("KO", data_cols)])
+nm$time <- sub("_.*", "", nm$variable)
+nm$loc[str_detect(nm$variable, "Bulk")] <- "Bulk"
+nm$loc[str_detect(nm$variable, "Rhizo")] <- "Rhizo"
+nm$treat[str_detect(nm$variable, "Litter")] <- "Litter"
+nm$treat[str_detect(nm$variable, "Litter", negate = T)] <- "NoLitter"
+
+for (k in kos) {
+  dat <- nm[nm$KO == k,]
+  if (nrow(dat) > 0) {
+    # non parametric but no grouping
+    # if (length(unique(dat$time)) > 1) {res.aov.time <- dat %>% kruskal_test(value ~ time)
+    # } else {res.aov.time <- NA}
+    # if (length(unique(dat$loc)) > 1) {res.aov.loc <- dat %>% kruskal_test(value ~ loc)
+    # } else {res.aov.loc <- NA}
+    # if (length(unique(dat$treat)) > 1) {res.aov.treat <- dat %>% kruskal_test(value ~ treat)
+    # } else {res.aov.treat <- NA}
+    res.aov <- aov(data=dat, formula=value ~ time*treat*loc)
+    fs <- summary(res.aov)[[1]][["F value"]]
+    ps <- summary(res.aov)[[1]][["Pr(>F)"]]
+    p_df[r,2:8] <- fs[-length(fs)]
+    # Correct for multiple comparisons (41 rows, 7 columns = 308 p values)
+    p_df[r,9:15] <- p.adjust(as.vector(unlist(ps[-length(ps)])), method="fdr", n=287)
+  }
+  else
+    p_df[r,2] <- rep("Irrelevant", 1)
+  
+  r=r+1
+}
+
+p_df <- merge(p_df, ko_to_gene[, c("KO", "gene", "pathway", "reaction")], by="KO")
+write.csv(p_df, "sup_tbl_S4_ANOVA_exp.csv", row.names = F)
+```
+```{r}
+# Analyze DESeq results
+### Upregulation compared to Bulk no litter
+res = results(dds)
+resultsNames(dds)
+res = results(dds, contrast = c("group_htl", "H1LitterRhizo", "H1NoLitterBulk")) # group, numerator, denominator
+comparison = "H1NoLitterBulk_vs_H1LitterRhizo"
+res_sig = which(res$padj < 0.05)
+length(res_sig)
+baseMean_df = data.frame(res$baseMean)
+betas_df = data.frame(res$log2FoldChange)
+stat_df = data.frame(res$stat)
+padj_df = data.frame(res$padj)
+setnames(baseMean_df, "res.baseMean", paste0("baseMean_", comparison))
+setnames(betas_df, "res.log2FoldChange", paste0("betas_", comparison))
+setnames(stat_df, "res.stat", paste0("stat_", comparison))
+setnames(padj_df, "res.padj", paste0("padj_", comparison))
+
+res = results(dds, contrast = c("group_htl", "H1LitterBulk", "H1NoLitterBulk"))
+comparison = "H1NoLitterBulk_vs_H1LitterBulk"
+res_sig = which(res$padj < 0.05)
+length(res_sig)
+baseMean_df = data.frame(baseMean_df, res$baseMean)
+betas_df = data.frame(betas_df, res$log2FoldChange)
+stat_df = data.frame(stat_df, res$stat)
+padj_df = data.frame(padj_df, res$padj)
+setnames(baseMean_df, "res.baseMean", paste0("baseMean_", comparison))
+setnames(betas_df, "res.log2FoldChange", paste0("betas_", comparison))
+setnames(stat_df, "res.stat",paste0("stat_", comparison))
+setnames(padj_df, "res.padj", paste0("padj_", comparison))
+
+res = results(dds, contrast = c("group_htl", "H1NoLitterRhizo", "H1NoLitterBulk"))
+comparison = "H1NoLitterBulk_vs_H1NoLitterRhizo"
+res_sig = which(res$padj < 0.05)
+length(res_sig)
+baseMean_df = data.frame(baseMean_df, res$baseMean)
+betas_df = data.frame(betas_df, res$log2FoldChange)
+stat_df = data.frame(stat_df, res$stat)
+padj_df = data.frame(padj_df, res$padj)
+setnames(baseMean_df, "res.baseMean", paste0("baseMean_", comparison))
+setnames(betas_df, "res.log2FoldChange", paste0("betas_", comparison))
+setnames(stat_df, "res.stat",paste0("stat_", comparison))
+setnames(padj_df, "res.padj", paste0("padj_", comparison))
+
+res = results(dds, contrast = c("group_htl", "H2LitterRhizo", "H2NoLitterBulk"))
+comparison = "H2NoLitterBulk_vs_H2LitterRhizo"
+res_sig = which(res$padj < 0.05)
+length(res_sig)
+baseMean_df = data.frame(baseMean_df, res$baseMean)
+betas_df = data.frame(betas_df, res$log2FoldChange)
+stat_df = data.frame(stat_df, res$stat)
+padj_df = data.frame(padj_df, res$padj)
+setnames(baseMean_df, "res.baseMean", paste0("baseMean_", comparison))
+setnames(betas_df, "res.log2FoldChange", paste0("betas_", comparison))
+setnames(stat_df, "res.stat",paste0("stat_", comparison))
+setnames(padj_df, "res.padj", paste0("padj_", comparison))
+
+res = results(dds, contrast = c("group_htl", "H2LitterBulk", "H2NoLitterBulk"))
+comparison = "H2NoLitterBulk_vs_H2LitterBulk"
+res_sig = which(res$padj < 0.05)
+length(res_sig)
+baseMean_df = data.frame(baseMean_df, res$baseMean)
+betas_df = data.frame(betas_df, res$log2FoldChange)
+stat_df = data.frame(stat_df, res$stat)
+padj_df = data.frame(padj_df, res$padj)
+setnames(baseMean_df, "res.baseMean", paste0("baseMean_", comparison))
+setnames(betas_df, "res.log2FoldChange", paste0("betas_", comparison))
+setnames(stat_df, "res.stat",paste0("stat_", comparison))
+setnames(padj_df, "res.padj", paste0("padj_", comparison))
+
+res = results(dds, contrast = c("group_htl", "H2NoLitterRhizo", "H2NoLitterBulk"))
+comparison = "H2NoLitterBulk_vs_H2NoLitterRhizo"
+res_sig = which(res$padj < 0.05)
+length(res_sig)
+baseMean_df = data.frame(baseMean_df, res$baseMean)
+betas_df = data.frame(betas_df, res$log2FoldChange)
+stat_df = data.frame(stat_df, res$stat)
+padj_df = data.frame(padj_df, res$padj)
+setnames(baseMean_df, "res.baseMean", paste0("baseMean_", comparison))
+setnames(betas_df, "res.log2FoldChange", paste0("betas_", comparison))
+setnames(stat_df, "res.stat",paste0("stat_", comparison))
+setnames(padj_df, "res.padj", paste0("padj_", comparison))
+
+res = results(dds, contrast = c("group_htl", "H3LitterRhizo", "H3NoLitterBulk"))
+comparison = "H3NoLitterBulk_vs_H3LitterRhizo"
+res_sig = which(res$padj < 0.05)
+length(res_sig)
+baseMean_df = data.frame(baseMean_df, res$baseMean)
+betas_df = data.frame(betas_df, res$log2FoldChange)
+stat_df = data.frame(stat_df, res$stat)
+padj_df = data.frame(padj_df, res$padj)
+setnames(baseMean_df, "res.baseMean", paste0("baseMean_", comparison))
+setnames(betas_df, "res.log2FoldChange", paste0("betas_", comparison))
+setnames(stat_df, "res.stat",paste0("stat_", comparison))
+setnames(padj_df, "res.padj", paste0("padj_", comparison))
+
+res = results(dds, contrast = c("group_htl", "H3LitterBulk", "H3NoLitterBulk"))
+comparison = "H3NoLitterBulk_vs_H3LitterBulk"
+res_sig = which(res$padj < 0.05)
+length(res_sig)
+baseMean_df = data.frame(baseMean_df, res$baseMean)
+betas_df = data.frame(betas_df, res$log2FoldChange)
+stat_df = data.frame(stat_df, res$stat)
+padj_df = data.frame(padj_df, res$padj)
+setnames(baseMean_df, "res.baseMean", paste0("baseMean_", comparison))
+setnames(betas_df, "res.log2FoldChange", paste0("betas_", comparison))
+setnames(stat_df, "res.stat",paste0("stat_", comparison))
+setnames(padj_df, "res.padj", paste0("padj_", comparison))
+
+res = results(dds, contrast = c("group_htl", "H3NoLitterRhizo", "H3NoLitterBulk"))
+comparison = "H3NoLitterBulk_vs_H3NoLitterRhizo"
+res_sig = which(res$padj < 0.05)
+length(res_sig)
+baseMean_df = data.frame(baseMean_df, res$baseMean)
+betas_df = data.frame(betas_df, res$log2FoldChange)
+stat_df = data.frame(stat_df, res$stat)
+padj_df = data.frame(padj_df, res$padj)
+setnames(baseMean_df, "res.baseMean", paste0("baseMean_", comparison))
+setnames(betas_df, "res.log2FoldChange", paste0("betas_", comparison))
+setnames(stat_df, "res.stat",paste0("stat_", comparison))
+setnames(padj_df, "res.padj", paste0("padj_", comparison))
+
+res = results(dds, contrast = c("group_htl", "H4LitterRhizo", "H4NoLitterBulk"))
+comparison = "H4NoLitterBulk_vs_H4LitterRhizo"
+res_sig = which(res$padj < 0.05)
+length(res_sig)
+baseMean_df = data.frame(baseMean_df, res$baseMean)
+betas_df = data.frame(betas_df, res$log2FoldChange)
+stat_df = data.frame(stat_df, res$stat)
+padj_df = data.frame(padj_df, res$padj)
+setnames(baseMean_df, "res.baseMean", paste0("baseMean_", comparison))
+setnames(betas_df, "res.log2FoldChange", paste0("betas_", comparison))
+setnames(stat_df, "res.stat",paste0("stat_", comparison))
+setnames(padj_df, "res.padj", paste0("padj_", comparison))
+
+res = results(dds, contrast = c("group_htl", "H4LitterBulk", "H4NoLitterBulk"))
+comparison = "H4NoLitterBulk_vs_H4LitterBulk"
+res_sig = which(res$padj < 0.05)
+length(res_sig)
+baseMean_df = data.frame(baseMean_df, res$baseMean)
+betas_df = data.frame(betas_df, res$log2FoldChange)
+stat_df = data.frame(stat_df, res$stat)
+padj_df = data.frame(padj_df, res$padj)
+setnames(baseMean_df, "res.baseMean", paste0("baseMean_", comparison))
+setnames(betas_df, "res.log2FoldChange", paste0("betas_", comparison))
+setnames(stat_df, "res.stat",paste0("stat_", comparison))
+setnames(padj_df, "res.padj", paste0("padj_", comparison))
+
+res = results(dds, contrast = c("group_htl", "H4NoLitterRhizo", "H4NoLitterBulk"))
+comparison = "H4NoLitterBulk_vs_H4NoLitterRhizo"
+res_sig = which(res$padj < 0.05)
+length(res_sig)
+baseMean_df = data.frame(baseMean_df, res$baseMean)
+betas_df = data.frame(betas_df, res$log2FoldChange)
+stat_df = data.frame(stat_df, res$stat)
+padj_df = data.frame(padj_df, res$padj)
+setnames(baseMean_df, "res.baseMean", paste0("baseMean_", comparison))
+setnames(betas_df, "res.log2FoldChange", paste0("betas_", comparison))
+setnames(stat_df, "res.stat",paste0("stat_", comparison))
+setnames(padj_df, "res.padj", paste0("padj_", comparison))
+
+res_all_data_bulkcomp = data.frame(betas_df, stat_df, padj_df)
+rownames(res_all_data_bulkcomp) = rownames(res)
+saveRDS(res_all_data_bulkcomp, file = paste(working_directory,"/res_nitrogen_bulkcomp.rds", sep = ""))
+
+# Only keep p values where the comparison by Wald test was significantly different
+padj_matrix = as.matrix(res_all_data_bulkcomp[,25:36]) # This is essentially padj_df, but only saved res_all_data, so working from that
+padj_matrix[is.na(padj_matrix)] = 1 # Change NA to 1 so will get filtered out in next step
+padj_matrix[which(padj_matrix > 0.05)] = NA # Convert all p values > 0.05 to NA
+res_all_data_bulkcomp_sig = data.frame(res_all_data_bulkcomp[,1:24], as.data.frame(padj_matrix)) # Remake res_all_data with only significant p values, all non-significant p values are NA
+
+saveRDS(res_all_data_bulkcomp_sig, file = paste(working_directory,"/res_nitrogen_bulkcomp_sig.rds", sep = ""))
+#res_litter_LRT_sig_data = readRDS(file = paste(working_directory,"/res_bacteria_bulkcomp_sig.rds", sep = ""))
+res_all_data_bulkcomp_sig <- merge(res_all_data_bulkcomp_sig, ann, by.x = "row.names", by.y = "GeneID")
+write.csv(res_all_data_bulkcomp_sig[res_all_data_bulkcomp_sig$KO %in% ko_to_gene$KO,], file = paste(working_directory,"results_htl_sig_bulkcomp_nitrogen_080920.csv"), append = FALSE)
+# Write all rows with at least one significant p value to file
+sig <- res_all_data_bulkcomp_sig[rowSums(is.na(res_all_data_bulkcomp_sig[,26:37]))<12,]
+write.csv(sig, "DESeq_sig_010121.csv")
+```
+```{r}
+# Optional: load previous tables
+res_all_data_bulkcomp <- readRDS("res_nitrogen_bulkcomp.rds")
+res_all_data_bulkcomp_sig <- read.csv("results_sig_nitrogen.csv")
+```
+```{r}
+# Look at general up/down regulation trends
+### Plot the log2-fold change compared to bulk no litter
+betas <- res_all_data_bulkcomp_sig[, c(1:14, ncol(res_all_data_bulkcomp_sig))]
+colnames(betas) <- gsub(".*vs_", "", colnames(betas))
+
+betas_grouped <- betas %>% group_by(KO) %>% summarise_at(colnames(betas)[3:14], mean, na.rm=T)
+ko_to_gene <- read.csv("ko_to_gene.csv", header=T)[,1:4]
+betas_grouped <- merge(betas_grouped, ko_to_gene[,c(1,2)])
+
+# Cap values at 4 to improve visualization
+temp <- betas_grouped[, 2:(ncol(betas_grouped)-2)]
+temp[temp > 4] <- 4
+betas_grouped[, 2:(ncol(betas_grouped)-2)] <- temp
+
+# Set palette
+my_palette <- colorRampPalette(c("blue","lightblue", "white","lightgoldenrod1","red"))(n = 100) 
+nHalf <- 50
+
+Min <- -4
+Max <- 4
+Thresh <- 0
+
+## Make vector of colors for values below threshold
+rc1 <- colorRampPalette(colors = c("blue","lightblue", "white"), space="Lab")(nHalf)    
+## Make vector of colors for values above threshold
+rc2 <- colorRampPalette(colors = c("white","lightgoldenrod1", "red"), space="Lab")(nHalf)
+rampcols <- c(rc1, rc2)
+rb1 <- seq(Min, Thresh, length.out=nHalf+1)
+rb2 <- seq(Thresh, Max, length.out=nHalf+1)[-1]
+rampbreaks <- c(rb1, rb2)
+
+# Reorder by pathways and sample
+colnames(betas_grouped) <- gsub("betas_.*vs_", "", colnames(betas_grouped))
+# sampord <- c(1,3,6,9,12,2,5,8,11,4,7,10,13,14)
+sampord <- c("KO", 
+             "H1LitterBulk", "H2LitterBulk", "H3LitterBulk", "H4LitterBulk", 
+             "H1LitterRhizo", "H2LitterRhizo", "H3LitterRhizo", "H4LitterRhizo", 
+             "H1NoLitterRhizo", "H2NoLitterRhizo", "H3NoLitterRhizo", "H4NoLitterRhizo", 
+             "gene")
+geneord <- order(match(betas_grouped$KO,ko_to_gene$KO, nomatch = 0))
+betas_grouped <- betas_grouped[geneord, sampord]
+heatmap.2(as.matrix(betas_grouped[,-c(1, ncol(betas_grouped))]), col=rampcols, breaks = rampbreaks, cexRow = 0.4, cexCol = 0.7, density.info="none", trace="none", labRow = betas_grouped$gene, dendrogram = "none", Rowv=FALSE, Colv=FALSE, symbreaks = FALSE)
+
+```
+```{r}
+# Statistical testing of log-fold change of assembled ORFs 
+ko_to_gene <- read.csv("ko_to_gene.csv", header=T)
+df <- read.csv("results_sig_nitrogen.csv") %>%
+  select(Row.names, KO, starts_with("betas"))
+df <- merge(df, ko_to_gene[,c("KO", "gene", "pathway")])
+# Separate nirK into archaeal and bacterial (nitrification and denitrification respectively)
+nirK_by_domain <- read.csv("nirK_dom.csv", header=T, sep=";")
+nirK_Archaea <- nirK_by_domain$gene_ID[nirK_by_domain$dom == "A"]
+nirK_Bacteria <- nirK_by_domain$gene_ID[nirK_by_domain$dom == "B"]
+df$KO[df$KO=="K00368" & (df$Row.names %in% nirK_Archaea)] <- "K00368A"
+df$KO[df$KO=="K00368" & (df$Row.names %in% nirK_Bacteria)] <- "K00368B"
+
+kos <- unique(df$KO)
+
+# Setting up a matrix for the results
+p_df <- as.data.frame(matrix(nrow=length(kos), ncol=11))
+p_df[,1] <- kos
+colnames(p_df) <- c("KO", "time F", "treat F", "loc F", "time*treat F", "time*loc F", "time p", "treat p", "loc p", "time*treat p", "time*loc p")
+r=1
+# Melting the betas dataframe
+nm <- pivot_longer(df, cols=starts_with("betas"), names_to = "variable", values_to = "value")
+nm$variable <- gsub("betas_", "", nm$variable)
+nm$variable <- gsub(".*_vs_", "", nm$variable)
+nm$time <- substr(nm$variable, 1, 2)
+nm$loc[str_detect(nm$variable, "Bulk")] <- "Bulk"
+nm$loc[str_detect(nm$variable, "Rhizo")] <- "Rhizo"
+nm$treat[str_detect(nm$variable, "NoLitter")] <- "NoLitter"
+nm$treat[str_detect(nm$variable, "NoLitter", negate = T)] <- "Litter"
+
+for (k in kos) {
+  dat <- nm[nm$KO == k,]
+  if (nrow(dat) > 0) {
+    # non parametric but no grouping
+    # if (length(unique(dat$time)) > 1) {res.aov.time <- dat %>% kruskal_test(value ~ time)
+    # } else {res.aov.time <- NA}
+    # if (length(unique(dat$loc)) > 1) {res.aov.loc <- dat %>% kruskal_test(value ~ loc)
+    # } else {res.aov.loc <- NA}
+    # if (length(unique(dat$treat)) > 1) {res.aov.treat <- dat %>% kruskal_test(value ~ treat)
+    # } else {res.aov.treat <- NA}
+    res.aov <- aov(data=dat, formula=value ~ time*treat*loc)
+    fs <- summary(res.aov)[[1]][["F value"]]
+    ps <- summary(res.aov)[[1]][["Pr(>F)"]]
+    if (!is.null(fs)) {
+      p_df[r,2:6] <- fs[-length(fs)]
+      # Correct for multiple comparisons (41 rows, 7 columns = 287 p values)
+      p_df[r,7:11] <- p.adjust(as.vector(unlist(ps[-length(ps)])), method="fdr", n=287)
+    }
+    else {
+      p_df[r,2:11] <- NA
+    }
+  }
+  else
+    p_df[r,2] <- rep("Irrelevant", 1)
+  
+  r=r+1
+}
+
+p_df <- merge(p_df, ko_to_gene[, c("KO", "gene", "pathway", "reaction")], by="KO")
+write.csv(p_df, "sup_tbl_S3_ANOVA_logfold.csv", row.names = F)
+```
+```{r}
+# Figure 4 panel C - heatmap of upregulation of GS/GOGAT regulatory genes
+reg <- betas %>%
+  filter(KO %in% ko_to_gene$KO[ko_to_gene$pathway == "reg"]) %>%
+  select(KO, starts_with("H")) %>%
+  reshape2::melt(variable.name = "sample") %>%
+  group_by(KO, sample) %>%
+  summarize_at("value", mean) %>%
+  dcast(KO~sample) %>%
+  left_join(ko_to_gene)
+
+betas_cols <- which(colnames(reg) %like% "^H")
+Min <- -1
+Max <- 3
+## Make vector of colors for values below threshold
+rc1 <- colorRampPalette(colors = c("blue","lightblue", "white"), space="Lab")(nHalf)    
+## Make vector of colors for values above threshold
+rc2 <- colorRampPalette(colors = c("white","lightgoldenrod1", "red"), space="Lab")(nHalf)
+rampcols <- c(rc1, rc2)
+
+rb1 <- seq(Min, Thresh, length.out=nHalf+1)
+rb2 <- seq(Thresh, Max, length.out=nHalf+1)[-1]
+rampbreaks <- c(rb1, rb2)
+heatmap.2(as.matrix(reg[,sampord[-c(1, length(sampord))]]), col=rampcols, breaks = rampbreaks, cexCol = 0.8, cexRow=0.6, density.info="none", trace="none", labCol = colnames(reg[,sampord[-c(1, length(sampord))]]), labRow = reg$gene, Rowv=FALSE, Colv=FALSE, dendrogram = "none")
+```
+
+
+

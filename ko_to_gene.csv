@@ -1,0 +1,64 @@
+"KO","gene","reaction","pathway","mean.ORF.length.in.MT","HMM.source","Threshold.type","Threshold.bitscore","X"
+"K00360","nasB","nitrate to nitrite","ANRA",0,"KEGG","Total",513,12
+"K00362","nirB","nitrite to ammonia","DNRA",633,"KEGG","Domain",542,57
+"K00363","nirD","nitrite to ammonia","DNRA",208,"KEGG","Domain",94,13
+"K00366","nirA","nitrite to ammonia","ANRA",428,"KEGG","Total",206,NA
+"K00367","narB","nitrate to nitrite","ANRA",0,"KEGG",NA,NA,NA
+"K00368","nirK","nitrite to nitric oxide","Nitrification",387,"KEGG","Total",212,43
+"K00370","narG","nitrate to nitrite","Denitrification",569,"KEGG","Domain",273,23
+"K00371","narH","nitrate to nitrite","Denitrification",420,"KEGG","Total",222,87
+"K00372","nasA","nitrate to nitrite","ANRA",724,"KEGG","Domain",655,NA
+"K00374","narI","nitrate to nitrite","Denitrification",278,"KEGG","Total",67,NA
+"K00376","nosZ","nitrous oxide to nitrogen","Denitrification",481,"KEGG","Total",276,1
+"K00531","anfG","dinitrogen to ammonia","Nitrogen fixation",0,"KEGG",NA,NA,NA
+"K01725","cynS","cyanate to carbamate","Cyanate",164,"KEGG","Total",52,33
+"K02305","norC","nitric oxide to nitrous oxide","Denitrification",362,"METABOLIC","Total",50,NA
+"K02567","napA","nitrate to nitrite","DNRA",605,"KEGG","Domain",637,77
+"K02568","napB","nitrate to nitrite","DNRA",123,"KEGG","Domain",30,57
+"K02586","nifD","dinitrogen to ammonia","Nitrogen fixation",531,"KEGG","Total",534,6
+"K02588","nifH","dinitrogen to ammonia","Nitrogen fixation",292,"KEGG","Total",358,8
+"K02591","nifK","dinitrogen to ammonia","Nitrogen fixation",455,"KEGG","Total",504,63
+"K03385","nrfA","nitrite to ammonia","DNRA",434,"KEGG","Total",133,13
+"K04561","norB","nitric oxide to nitrous oxide","Denitrification",409,"METABOLIC","Total",80,NA
+"K05601","hcp","hydroxylamine to ammonia","Denitrification",426,"KEGG","Total",105,9
+"K10534","NR","nitrate to nitrite","ANRA",596,"KEGG","Total",465,63
+"K10535","hao","hydroxylamine to nitrite","Nitrification",512,"KEGG","Total",281,83
+"K10944","amoA","ammonia to hydroxylamine","Nitrification",265,"KEGG","Total",192,77
+"K10945","amoB","ammonia to hydroxylamine","Nitrification",335,"KEGG","Total",161,43
+"K10946","amoC","ammonia to hydroxylamine","Nitrification",255,"KEGG","Total",152,7
+"K15864","nirS","nitrite to nitric oxide","Denitrification",494,"METABOLIC","Total",200,NA
+"K15876","nrfH","nitrite to ammonia","DNRA",160,"KEGG","Total",111,7
+"K15877","cyp55","fungal nitric oxide to nitrous oxide","Denitrification",378,"KEGG","Total",511,93
+"K17877","nit-6","nitrite to ammonia","ANRA",869,"KEGG","Domain",950,NA
+"K20932","hzsC","nitric oxide to hydrazine","Annamox",0,"METABOLIC",NA,NA,NA
+"K20933","hzsB","nitric oxide to hydrazine","Annamox",0,"KEGG",NA,NA,NA
+"K20934","hzsA","nitric oxide to hydrazine","Annamox",0,"KEGG",NA,NA,NA
+"K20935","hdh/hzoA","hydrazine to dinitrogen","Annamox",0,"METABOLIC",NA,NA,NA
+"K22896","vnfD","dinitrogen to ammonia","Nitrogen fixation",0,"KEGG",NA,NA,NA
+"K22897","vnfK","dinitrogen to ammonia","Nitrogen fixation",0,"KEGG",NA,NA,NA
+"K22898","vnfG","dinitrogen to ammonia","Nitrogen fixation",0,"KEGG",NA,NA,NA
+"K22899","vnfH","dinitrogen to ammonia","Nitrogen fixation",0,"KEGG",NA,NA,NA
+"K05916","hmp","nitric oxide to nitrate","NO_detox",381,"KEGG","",NA,NA
+"nxrA_alignment","nxrA","nitrate to nitrite","Nitrification",494,"METABOLIC","",NA,NA
+"nxrB_alignment","nxrB","nitrate to nitrite","Nitrification",387,"METABOLIC","",NA,NA
+"K00260","gudB","Glutamate dehydrogenase","GDH",400,"KEGG","",NA,NA
+"K00264","glt1","Glutamate synthase","GSGOGAT",2188,"KEGG","",NA,NA
+"K00265","gltB","Glutamate synthase large chain","GSGOGAT",1112,"KEGG","",NA,NA
+"K00266","gltD","Glutamate synthase small chain","GSGOGAT",488,"KEGG","",NA,NA
+"K15371","gdh2","Glutamate dehydrogenase","GDH",940,"KEGG","",NA,NA
+"K01915","glnA","Glutamate synthase","GSGOGAT",376,"KEGG","",NA,NA
+"K01183","chit1","Chitinase","Exoprot",476,"KEGG","",NA,NA
+"K03791","putative_chitinase","Chitinase","Exoprot",218,"KEGG","",NA,NA
+"K13381","chiA","Chitinase","Exoprot",0,"KEGG",NA,NA,NA
+"K17523","CHI3L1_2","Chitinase","Exoprot",0,"KEGG",NA,NA,NA
+"K17524","CHI3L1_4","Chitinase","Exoprot",0,"KEGG",NA,NA,NA
+"K17525","CHID1","Chitinase","Exoprot",357,"KEGG","",NA,NA
+"MER","exoprot","Exoprotease","Exoprot",396,"KEGG","",NA,NA
+"K03320","amt","ammonia transporter","transport",394,"KEGG","",NA,NA
+"K00990","glnD","N regulator","reg",472,"KEGG","",NA,NA
+"K04751","glnB","N regulator","reg",116,"KEGG","",NA,NA
+"K07708","glnL","N regulator","reg",349,"KEGG","",NA,NA
+"K07712","glnG","N regulator","reg",461,"KEGG","",NA,NA
+"K04752","glnK","amt regulator","reg",113,"KEGG","",NA,NA
+"K00368A","nirK","nitrite to nitric oxide","Nitrification",387,"KEGG","Total",212,43
+"K00368B","nirK","nitrite to nitric oxide","Denitrification",387,"KEGG","Total",212,43
