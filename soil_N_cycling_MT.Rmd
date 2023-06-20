@@ -6,7 +6,8 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_knit$set(root.dir = ".")
 ```
 ```{r}
 #Load libraries
@@ -85,12 +86,24 @@ nit <- read.delim("DESeq_normalized_nitrogen.txt", sep="\t", header=T, stringsAs
 #to run only the first 3 time points
 #nit <- nit[,-which(colnames(nit) %like% "H4_")]
 
-dds_bray_dm <- vegdist(t(nit[,-c(1,ncol(nit))]), method="bray", na.rm=T)
+temp <- nit %>% select(-KO)
+dds_bray_dm <- vegdist(t(temp), method="bray", na.rm=T)
 #dds_bray_dm = read.delim("DESeq_normalized_nitrogen/bray_curtis_dm.txt",header = TRUE, row.names = 1)
 #dds_bray_dm <- dds_bray_dm[!(rownames(dds_bray_dm) %in% c("H3_Rhizo_39", "H1_RhizoLitter_2", "H2_RhizoLitter_9")), !(colnames(dds_bray_dm) %in% c("H3_Rhizo_39", "H1_RhizoLitter_2", "H2_RhizoLitter_9"))]
-dds_dist = as.dist(dds_bray_dm)
-dds_metaMDS<-metaMDS(dds_dist, distance = "bray", k = 2, trymax = 1000, autotransform =FALSE, noshare = 0.1, wascores = TRUE, expand = TRUE, trace = 1, plot = TRUE)
-adonis(dds_dist ~ location * treatment * harvest, data = mtx_design, strata = mtx_design$harvest, permutations = 10000)
+dds_dist <- as.dist(temp)
+
+adonis2(dds_dist ~ location * treatment * harvest, data = mtx_design, strata = mtx_design$harvest, permutations = 10000)
+# adonis2(formula = dds_dist ~ location * treatment * harvest, data = mtx_design, permutations = 10000, strata = mtx_design$harvest)
+#                            Df SumOfSqs      R2      F    Pr(>F)    
+# location                    1  0.29278 0.10427 9.5760 9.999e-05 ***
+# treatment                   1  0.23281 0.08292 7.6147 9.999e-05 ***
+# harvest                     3  0.84031 0.29928 9.1616 9.999e-05 ***
+# location:treatment          1  0.02745 0.00978 0.8977    0.5399    
+# location:harvest            3  0.20808 0.07411 2.2686    0.0004 ***
+# treatment:harvest           3  0.19968 0.07112 2.1771    0.0012 ** 
+# location:treatment:harvest  3  0.12000 0.04274 1.3083    0.1295    
+# Residual                   29  0.88664 0.31578                     
+# Total                      44  2.80775 1.00000             
 
 #PCoA - figure 1
 # Panel A - all time points
@@ -240,7 +253,7 @@ heatmap.2(as.matrix(lowcov[,sampord]), col=my_palette, cexCol = 0.8, cexRow=0.5,
 dev.off()
 ```
 ```{r}
-# amoA vs. nirK
+# amoA vs. nirK - figure 3 panel D
 data_cols <- which(colnames(raw_genes) %like% "^H[1-4]")
 raw_genes <- raw_genes %>% column_to_rownames("Row.names") %>% pivot_longer(cols = !KO, names_to = "sample", values_to = "value") %>% group_by(KO, sample) %>% summarise(value = sum(value))
 ko_to_gene <- read.csv("ko_to_gene.csv")
@@ -532,7 +545,7 @@ res_all_data_bulkcomp_sig <- read.csv("results_sig_nitrogen.csv")
 ```{r}
 # Look at general up/down regulation trends
 ### Plot the log2-fold change compared to bulk no litter
-betas <- res_all_data_bulkcomp_sig[, c(1:14, ncol(res_all_data_bulkcomp_sig))]
+betas <- res_all_data_bulkcomp_sig %>% select(Row.names, starts_with("betas"), KO)
 colnames(betas) <- gsub(".*vs_", "", colnames(betas))
 
 betas_grouped <- betas %>% group_by(KO) %>% summarise_at(colnames(betas)[3:14], mean, na.rm=T)
@@ -636,7 +649,7 @@ p_df <- merge(p_df, ko_to_gene[, c("KO", "gene", "pathway", "reaction")], by="KO
 write.csv(p_df, "sup_tbl_S3_ANOVA_logfold.csv", row.names = F)
 ```
 ```{r}
-# Figure 4 panel C - heatmap of upregulation of GS/GOGAT regulatory genes
+# Figure 4 panel D - heatmap of upregulation of GS/GOGAT regulatory genes
 reg <- betas %>%
   filter(KO %in% ko_to_gene$KO[ko_to_gene$pathway == "reg"]) %>%
   select(KO, starts_with("H")) %>%
@@ -660,6 +673,24 @@ rb2 <- seq(Thresh, Max, length.out=nHalf+1)[-1]
 rampbreaks <- c(rb1, rb2)
 heatmap.2(as.matrix(reg[,sampord[-c(1, length(sampord))]]), col=rampcols, breaks = rampbreaks, cexCol = 0.8, cexRow=0.6, density.info="none", trace="none", labCol = colnames(reg[,sampord[-c(1, length(sampord))]]), labRow = reg$gene, Rowv=FALSE, Colv=FALSE, dendrogram = "none")
 ```
+```{r}
+# AOA vs. AOB, NOB abundance - figure 3 panel C
+fun <- function(x) {gsub(",", "\\.", x)}
+relabun <- read.delim("Nitrifiers_relabun.txt", sep="\t", header=T) %>%
+  mutate(across(starts_with("H"), fun)) %>% 
+  pivot_longer(cols=-Taxonomy, names_to = "Microcosm", values_to = "relabun") %>%
+  mutate(fill_col = gsub("^H[0-9]*_", "", Microcosm)) %>%
+  mutate(time = gsub("_.*", "", Microcosm)) %>%
+  mutate(relabun_pct = 100*(as.numeric(relabun)))
+relabun$grp <- paste(relabun$time, relabun$Taxonomy, sep="_")
+ggplot(data = relabun, aes(x = grp, y = relabun_pct, fill = fill_col)) + 
+  geom_bar(position = "dodge", stat = "identity", color="black") +
+  scale_fill_manual(values=c("#1f78b4", "#a6cee3", "#6a3d9a", "#cab2d6")) + 
+  theme_classic() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+ 
+  xlab("Time") + ylab("Relative abundance (%)")
+ggsave("fig3_panel_C.pdf")
+```
+
 
 
 
