@@ -25,6 +25,7 @@ library("ggpubr")
 library("rstatix")
 library("ggordiplots")
 library("plotly")
+library("ggvegan")
 ```
 ```{r}
 #Load files
@@ -107,7 +108,7 @@ adonis2(dds_dist ~ location * treatment * harvest, data = mtx_design, strata = m
 
 #PCoA - figure 1
 # Panel A - all time points
-pcoa_bray <- rda(t(nit[,-ncol(nit)]))
+#pcoa_bray <- rda(t(nit[,-ncol(nit)]) ~ harvest+location+treatment, mtx_design)
 PCA_palette <- c("#FA9FD5", "#CB99E4", "#A3D8F9", "#9CF980", 
                  "#FB79C6", "#BC70E3", "#6BC3FA", "#6AEA43", 
                  "#FA48B2", "#A839E1", "#2FABF9", "#45C020", 
@@ -161,7 +162,7 @@ B <- ggplot(pcoa_bray_df_noT4, aes(x = Axis.1, y = Axis.2, color = shape_grp)) +
   theme_bw() + stat_ellipse(level = 0.9)
 
 ggarrange(A, B, nrow=1, ncol=2)
-ggsave("Ncycling_paper/fig1_stats.pdf", width=8, height=6)
+ggsave("fig1_stats.pdf", width=8, height=6)
 ```
 ```{r}
 # GS/GOGAT to GDH ratio in transcripts (not genomes) - figure 4 panel C
@@ -185,7 +186,7 @@ ggboxplot(temp, x = "time", y = "rat", fill="grp") +
   theme_bw() + 
   scale_fill_manual(values=c("#a6cee3", "#1f78b4", "#cab2d6", "#6a3d9a")) + 
   xlab("Time") + ylab("ratio of GS/GOGAT to GDH")
-ggsave("Ncycling_paper/Ncycle_fig_4_glnA_gudB_ratio.pdf")
+ggsave("Ncycle_fig_4_glnA_gudB_ratio.pdf")
 
 adonis2(temp$rat~temp$grp*temp$time)
 # Df SumOfSqs      R2      F Pr(>F)   
@@ -208,7 +209,14 @@ ggplot(temp, aes(x = prot, y = amoa)) +
   scale_color_manual(values=c("#a6cee3", "#1f78b4", "#cab2d6", "#6a3d9a")) + 
   xlab("Thaumarchaeota extracellular protease") + ylab("Thaumarchaeota amoA") +
   geom_smooth(method='lm', formula= y~x, color="black")
-ggsave("Ncycling_paper/Ncycle_fig_3E_amoA_prot_ratio.pdf")
+ggsave("Ncycle_fig_3E_amoA_prot_ratio.pdf")
+
+# amoA over time boxplots - figure 3 panel F
+temp <- amoa %>% filter(loc == "Rhizo")
+ggplot(data = temp, aes(x = time, y = amoa, fill = grp)) + theme_classic() + xlab("Time (days)") + 
+  ylab("amoA expression") + geom_boxplot() + 
+  scale_fill_manual(values=c("#cab2d6", "#6a3d9a"))
+ggsave("Ncycle_fig_3F_amoA_over_time.pdf")
 ```
 ```{r}
 # Separate denitrifier and nitrifier nirK
@@ -253,6 +261,9 @@ heatmap.2(as.matrix(lowcov[,sampord]), col=my_palette, cexCol = 0.8, cexRow=0.5,
 dev.off()
 ```
 ```{r}
+# amoA coverage - for tree bars
+nit %>% filter(KO == "K10944") %>% rownames_to_column("variant") %>% pivot_longer(cols=!c(KO,variant), names_to = "sample", values_to = "cov") %>% mutate(grp = gsub("_[0-9]*$", "", sample)) %>% group_by(grp, variant) %>% summarise(cov = mean(cov)) %>% select(variant, cov, grp) %>% mutate(cov = round(cov, digits=2)) %>% pivot_wider(names_from = grp, values_from = cov) %>% write.csv("amoA_expression_for_itol.csv", row.names = F)
+
 # amoA vs. nirK - figure 3 panel D
 data_cols <- which(colnames(raw_genes) %like% "^H[1-4]")
 raw_genes <- raw_genes %>% column_to_rownames("Row.names") %>% pivot_longer(cols = !KO, names_to = "sample", values_to = "value") %>% group_by(KO, sample) %>% summarise(value = sum(value))
