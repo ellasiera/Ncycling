@@ -89,11 +89,8 @@ nit <- read.delim("DESeq_normalized_nitrogen.txt", sep="\t", header=T, stringsAs
 
 temp <- nit %>% select(-KO)
 dds_bray_dm <- vegdist(t(temp), method="bray", na.rm=T)
-#dds_bray_dm = read.delim("DESeq_normalized_nitrogen/bray_curtis_dm.txt",header = TRUE, row.names = 1)
-#dds_bray_dm <- dds_bray_dm[!(rownames(dds_bray_dm) %in% c("H3_Rhizo_39", "H1_RhizoLitter_2", "H2_RhizoLitter_9")), !(colnames(dds_bray_dm) %in% c("H3_Rhizo_39", "H1_RhizoLitter_2", "H2_RhizoLitter_9"))]
-dds_dist <- as.dist(temp)
 
-adonis2(dds_dist ~ location * treatment * harvest, data = mtx_design, strata = mtx_design$harvest, permutations = 10000)
+adonis2(dds_bray_dm ~ location * treatment * harvest, data = mtx_design, strata = mtx_design$harvest, permutations = 10000)
 # adonis2(formula = dds_dist ~ location * treatment * harvest, data = mtx_design, permutations = 10000, strata = mtx_design$harvest)
 #                            Df SumOfSqs      R2      F    Pr(>F)    
 # location                    1  0.29278 0.10427 9.5760 9.999e-05 ***
@@ -136,9 +133,28 @@ A <- ggplot(pcoa_bray_df, aes(x = Axis.1, y = Axis.2, group = time)) +
 
 # Only first 3 time points - panel B
 nit_noT4 <- nit %>%
-  select(!starts_with("H4"))
-dds_bray_dm_noT4 <- vegdist(t(nit_noT4[,-c(1,ncol(nit_noT4))]), method="bray", na.rm=T)
-dds_dist_noT4 = as.dist(dds_bray_dm_noT4)
+  select(!starts_with("H4")) %>%
+  select(-KO)
+dds_bray_dm_noT4 <- vegdist(t(nit_noT4), method="bray", na.rm=T)
+mtx_design_noT4 <- mtx_design %>%
+  mutate(harvest = as.character(harvest)) %>%
+  filter(harvest != "H4")
+
+adonis2(dds_bray_dm_noT4 ~ location * treatment * harvest, data = mtx_design_noT4, strata = mtx_design_noT4$harvest, permutations = 10000)
+
+#                            Df SumOfSqs      R2      F    Pr(>F)    
+# location                    1  0.29009 0.17580 9.9247 9.999e-05 ***
+# treatment                   1  0.22904 0.13880 7.8363 9.999e-05 ***
+# harvest                     2  0.18074 0.10953 3.0918 9.999e-05 ***
+# location:treatment          1  0.02349 0.01424 0.8038    0.6138    
+# location:harvest            2  0.11040 0.06690 1.8885    0.0167 *  
+# treatment:harvest           2  0.10513 0.06371 1.7983    0.0236 *  
+# location:treatment:harvest  2  0.09745 0.05906 1.6671    0.0406 *  
+# Residual                   21  0.61380 0.37197                     
+# Total                      32  1.65013 1.00000                     
+# ---
+# Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
 pcoa_bray_noT4 <- pcoa(dds_dist_noT4)
 jac_variances <- data.frame(pcoa_bray_noT4$values$Relative_eig) %>% 
   rownames_to_column(var = "PCaxis") %>% 
@@ -225,39 +241,37 @@ nirK_by_domain <- read.csv("nirK_dom.csv", header=T, sep=";")
 nirK_Archaea <- nirK_by_domain$gene_ID[nirK_by_domain$dom == "A"]
 nirK_Bacteria <- nirK_by_domain$gene_ID[nirK_by_domain$dom == "B"]
 # recreate sup. fig. 1 with separation of nitrifier nirK and denitrifier nirK
-#raw_genes <- read.delim("DESeq_normalized_nitrogen.csv", header=T, sep=";")
+raw_genes <- read.delim("DESeq_normalized_nitrogen.csv", header=T, sep=",")
 raw_genes$KO[raw_genes$Row.names %in% nirK_Archaea] <- "K00368A"
 raw_genes$KO[raw_genes$Row.names %in% nirK_Bacteria] <- "K00368B"
 raw_genes <- raw_genes %>% column_to_rownames("Row.names") %>% pivot_longer(cols = !KO, names_to = "sample", values_to = "value") %>% group_by(KO, sample) %>% summarise(value = sum(value))
 
 raw_genes$variable <- sub("_[0-9]*$", "", raw_genes$sample)
-raw_genes <- raw_genes %>% group_by(KO,variable) %>% summarise(value = mean(value))
-raw_genes <- as.data.frame(acast(raw_genes, KO~variable))
+raw_genes <- raw_genes %>% group_by(KO,variable) %>% summarise(value = mean(value)) %>% as.data.frame %>% pivot_wider(names_from = variable, values_from = value)
 
 ko_to_gene <- read.csv("ko_to_gene.csv")
-raw_genes <- merge(raw_genes, ko_to_gene, by.x="row.names", by.y="KO")
-colnames(raw_genes)[1] <- "KO"
+raw_genes <- merge(raw_genes, ko_to_gene, by="KO")
 raw_genes$gene[raw_genes$KO == "K00368A"] <- "nirK nit"
 raw_genes$gene[raw_genes$KO == "K00368B"] <- "nirK den"
 
 sampord <- c(2,6,10,14,3,7,11,15,4,8,12,16,5,9,13,17)
 raw_genes <- raw_genes[raw_genes$pathway %in% c("ANRA", "DNRA", "Denitrification", "Nitrification", "reg", "transport", "Exoprot", "GDH", "GSGOGAT", "NO_detox"),]
 raw_genes <- raw_genes[order(raw_genes$pathway),]
-hist(rowSums(raw_genes[,2:17])) # To determine cutoffs for high, medium and low coverage for improved visibility of the heatmaps
+hist(rowSums(raw_genes[,2:17]), breaks=14) # To determine cutoffs for high, medium and low coverage for improved visibility of the heatmaps
 
 my_palette <- colorRampPalette(c('#ffffff','#8856a7'))(n = 299)
 highcov <- raw_genes[rowSums(raw_genes[,2:17])>150000,] %>% pivot_longer(cols = c("KO", starts_with("H[1-4]")), values_to = "cov")
-midcov <- raw_genes[rowSums(raw_genes[,2:17])<=150000 & rowSums(raw_genes[,2:17])>=50000,]
-lowcov <- raw_genes[rowSums(raw_genes[,2:17])<=50000,]
+midcov <- raw_genes[rowSums(raw_genes[,2:17])<=150000 & rowSums(raw_genes[,2:17])>=50000,] %>% pivot_longer(cols = c("KO", starts_with("H[1-4]")), values_to = "cov")
+lowcov <- raw_genes[rowSums(raw_genes[,2:17])<=50000,] %>% pivot_longer(cols = c("KO", starts_with("H[1-4]")), values_to = "cov")
 
 pdf("sup_fig_1_A.pdf", width=7)
-heatmap.2(as.matrix(highcov[,sampord]), col=my_palette, cexCol = 0.8, cexRow=1, density.info="none", trace="none", labRow = highcov$gene, Rowv=FALSE, Colv=FALSE, dendrogram = "none")
+heatmap.2(as.matrix(highcov[,sampord-1]), col=my_palette, cexCol = 0.8, cexRow=1, density.info="none", trace="none", labRow = highcov$gene, Rowv=FALSE, Colv=FALSE, dendrogram = "none")
 dev.off()
 pdf("sup_fig_1_B.pdf", width=7)
-heatmap.2(as.matrix(midcov[,sampord]), col=my_palette, cexCol = 0.8, cexRow=1, density.info="none", trace="none", labRow = midcov$gene, Rowv=FALSE, Colv=FALSE, dendrogram = "none")
+heatmap.2(as.matrix(midcov[,sampord-1]), col=my_palette, cexCol = 0.8, cexRow=1, density.info="none", trace="none", labRow = midcov$gene, Rowv=FALSE, Colv=FALSE, dendrogram = "none")
 dev.off()
 pdf("sup_fig_1_C.pdf", width=7)
-heatmap.2(as.matrix(lowcov[,sampord]), col=my_palette, cexCol = 0.8, cexRow=0.5, density.info="none", trace="none", labRow = lowcov$gene, Rowv=FALSE, Colv=FALSE, dendrogram = "none")
+heatmap.2(as.matrix(lowcov[,sampord-1]), col=my_palette, cexCol = 0.8, cexRow=0.5, density.info="none", trace="none", labRow = lowcov$gene, Rowv=FALSE, Colv=FALSE, dendrogram = "none")
 dev.off()
 ```
 ```{r}
